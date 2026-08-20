@@ -8,9 +8,9 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Hearing Hope – Official Price List",
+  title: "Hearing Hope – Recommended Price List",
   description:
-    "Official printable A4 price list for Hearing Hope hearing aids.",
+    "Recommended printable A4 price list for Hearing Hope hearing aids.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

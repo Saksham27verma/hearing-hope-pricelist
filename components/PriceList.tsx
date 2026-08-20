@@ -180,7 +180,7 @@ function ClinicHeader() {
       />
       <div className="text-right">
         <p className="text-[9px] font-semibold tracking-[0.28em] text-[#18AD8D] uppercase">
-          Official Price List
+          Recommended Price List
         </p>
         <p className="mt-0.5 text-xs font-medium text-[#0A1F1B]">August 2026</p>
       </div>
@@ -238,7 +238,7 @@ export default function PriceList() {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef,
-    documentTitle: "Hearing Hope - Official Price List",
+    documentTitle: "Hearing Hope - Recommended Price List",
     pageStyle: `
       @page { size: A4; margin: 0; }
       html, body { margin: 0; padding: 0; background: #fff; }
