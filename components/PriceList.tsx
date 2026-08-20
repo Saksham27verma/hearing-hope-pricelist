@@ -46,6 +46,7 @@ function normalizeCatalog(items: HearingAid[]): HearingAid[] {
     return {
       ...item,
       deviceTypes,
+      warrantyYears: item.warrantyYears === 4 ? 4 : 2,
       pageId:
         item.pageId ||
         `page-${item.brand.toLowerCase().replace(/\s+/g, "-")}`,
@@ -596,6 +597,9 @@ export default function PriceList() {
                         <th className="py-1.5 pr-2 text-center font-semibold">
                           Unit
                         </th>
+                        <th className="py-1.5 pr-2 text-center font-semibold">
+                          Warranty (yrs)
+                        </th>
                         <th className="w-12 py-1.5 pr-1 text-center font-semibold">
                           <BatteryCharging
                             className="mx-auto h-3.5 w-3.5 text-[#18AD8D]"
@@ -691,6 +695,9 @@ export default function PriceList() {
                             <span className="inline-flex rounded-full bg-neutral-100 px-2 py-px text-[10px] font-medium text-neutral-600">
                               {product.unit}
                             </span>
+                          </td>
+                          <td className="py-1 pr-2 text-center tabular-nums font-semibold text-[#0A1F1B]">
+                            {product.warrantyYears}
                           </td>
                           <td className="py-1 pr-1 text-center">
                             <FeatureMark

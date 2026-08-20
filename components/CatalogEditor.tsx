@@ -5,11 +5,13 @@ import { X } from "lucide-react";
 import {
   DEVICE_TYPE_LABELS,
   DEVICE_TYPE_ORDER,
+  WARRANTY_OPTIONS,
   labelForPage,
   type CatalogPage,
   type DeviceType,
   type HearingAid,
   type Unit,
+  type WarrantyYears,
 } from "@/data/products";
 
 type Draft = {
@@ -19,6 +21,7 @@ type Draft = {
   name: string;
   mrp: string;
   unit: Unit;
+  warrantyYears: WarrantyYears;
   deviceTypes: DeviceType[];
   isRechargeable: boolean;
   hasBluetooth: boolean;
@@ -30,6 +33,7 @@ const emptyDraft = (page?: CatalogPage | null): Draft => ({
   name: "",
   mrp: "",
   unit: "Pair",
+  warrantyYears: 2,
   deviceTypes: [],
   isRechargeable: true,
   hasBluetooth: true,
@@ -43,6 +47,7 @@ function toDraft(product: HearingAid): Draft {
     name: product.name,
     mrp: String(product.mrp),
     unit: product.unit,
+    warrantyYears: product.warrantyYears === 4 ? 4 : 2,
     deviceTypes: [...product.deviceTypes],
     isRechargeable: product.isRechargeable,
     hasBluetooth: product.hasBluetooth,
@@ -129,6 +134,7 @@ export default function CatalogEditor({
       name,
       mrp,
       unit: draft.unit,
+      warrantyYears: draft.warrantyYears,
       isRechargeable: draft.isRechargeable,
       hasBluetooth: draft.hasBluetooth,
       deviceTypes: draft.deviceTypes,
@@ -205,7 +211,7 @@ export default function CatalogEditor({
             />
           </label>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <label className="grid gap-1.5 text-sm">
               <span className="font-medium text-[#0A1F1B]">MRP (₹)</span>
               <input
@@ -232,6 +238,25 @@ export default function CatalogEditor({
               >
                 <option value="Pair">Pair</option>
                 <option value="Single">Single</option>
+              </select>
+            </label>
+            <label className="grid gap-1.5 text-sm">
+              <span className="font-medium text-[#0A1F1B]">Warranty (years)</span>
+              <select
+                value={draft.warrantyYears}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    warrantyYears: Number(event.target.value) as WarrantyYears,
+                  }))
+                }
+                className="rounded-lg border border-neutral-200 px-3 py-2 outline-none focus:border-[#18AD8D]"
+              >
+                {WARRANTY_OPTIONS.map((years) => (
+                  <option key={years} value={years}>
+                    {years} years
+                  </option>
+                ))}
               </select>
             </label>
           </div>
