@@ -47,6 +47,7 @@ export const BRAND_LOGOS: Record<string, string> = {
   Oticon: "/brands/oticon.svg",
   Widex: "/brands/widex.svg",
   Bernafon: "/brands/bernafon.svg",
+  Unitron: "/brands/unitron.svg",
 };
 
 export const KNOWN_BRANDS = Object.keys(BRAND_LOGOS);
