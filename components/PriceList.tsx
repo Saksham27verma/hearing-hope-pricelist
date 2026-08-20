@@ -5,8 +5,10 @@ import { useReactToPrint } from "react-to-print";
 import {
   BatteryCharging,
   Bluetooth,
+  ChevronDown,
+  ChevronUp,
   FilePlus,
-  MapPin,
+  GripVertical,
   Pencil,
   Phone,
   Plus,
@@ -83,6 +85,63 @@ function formatInr(value: number) {
   }).format(value);
 }
 
+function moveItem<T>(list: T[], from: number, to: number): T[] {
+  if (from === to || from < 0 || to < 0 || to >= list.length) return list;
+  const next = [...list];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}
+
+function reorderPageProducts(
+  items: HearingAid[],
+  pageId: string,
+  from: number,
+  to: number,
+): HearingAid[] {
+  const pageItems = items.filter((item) => item.pageId === pageId);
+  const reordered = moveItem(pageItems, from, to);
+  let index = 0;
+  return items.map((item) =>
+    item.pageId === pageId ? reordered[index++] : item,
+  );
+}
+
+function ReorderControls({
+  label,
+  index,
+  total,
+  onMove,
+}: {
+  label: string;
+  index: number;
+  total: number;
+  onMove: (from: number, to: number) => void;
+}) {
+  return (
+    <div className="print:hidden flex flex-col">
+      <button
+        type="button"
+        disabled={index === 0}
+        onClick={() => onMove(index, index - 1)}
+        className="rounded-sm p-0.5 text-neutral-400 hover:text-[#0A1F1B] disabled:opacity-25"
+        aria-label={`Move ${label} up`}
+      >
+        <ChevronUp className="h-3.5 w-3.5" strokeWidth={2} />
+      </button>
+      <button
+        type="button"
+        disabled={index === total - 1}
+        onClick={() => onMove(index, index + 1)}
+        className="rounded-sm p-0.5 text-neutral-400 hover:text-[#0A1F1B] disabled:opacity-25"
+        aria-label={`Move ${label} down`}
+      >
+        <ChevronDown className="h-3.5 w-3.5" strokeWidth={2} />
+      </button>
+    </div>
+  );
+}
+
 function FeatureMark({
   active,
   label,
@@ -102,31 +161,28 @@ function FeatureMark({
   return (
     <span
       aria-label={`${label}: ${active ? "Yes" : "No"}`}
-      className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full ${
+      className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full ${
         active ? activeClass : "bg-neutral-100 text-neutral-300"
       }`}
     >
-      <Icon className="h-4 w-4" strokeWidth={2} />
+      <Icon className="h-3.5 w-3.5" strokeWidth={2} />
     </span>
   );
 }
 
 function ClinicHeader() {
   return (
-    <header className="flex items-center justify-between gap-6">
+    <header className="flex items-center justify-between gap-4">
       <img
         src="/brand/logo.png"
         alt="Hearing Hope — Centre for Speech & Hearing"
-        className="h-[72px] w-auto object-contain"
+        className="h-[48px] w-auto object-contain"
       />
       <div className="text-right">
-        <p className="text-[10px] font-semibold tracking-[0.28em] text-[#18AD8D] uppercase">
+        <p className="text-[9px] font-semibold tracking-[0.28em] text-[#18AD8D] uppercase">
           Official Price List
         </p>
-        <p className="mt-1 text-sm font-medium text-[#0A1F1B]">August 2026</p>
-        <p className="mt-0.5 text-[11px] text-neutral-400">
-          For clinic consultation
-        </p>
+        <p className="mt-0.5 text-xs font-medium text-[#0A1F1B]">August 2026</p>
       </div>
     </header>
   );
@@ -137,7 +193,7 @@ function BrandWave() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 282 13"
-      className="mt-5 h-2.5 w-full"
+      className="mt-2 h-2 w-full"
       aria-hidden="true"
     >
       <path
@@ -153,28 +209,24 @@ function BrandWave() {
 
 function PageFooter({ brand }: { brand: string }) {
   return (
-    <footer className="mt-auto pt-8">
-      <div className="mb-4 h-px w-full bg-gradient-to-r from-[#18AD8D] via-[#18AD8D]/20 to-[#FF6503]" />
-      <div className="flex items-end justify-between gap-6">
+    <footer className="mt-auto pt-3">
+      <div className="mb-2 h-px w-full bg-gradient-to-r from-[#18AD8D] via-[#18AD8D]/20 to-[#FF6503]" />
+      <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold tracking-wide text-[#0A1F1B]">
+          <p className="text-[10px] font-semibold tracking-wide text-[#0A1F1B]">
             Hearing Hope · Centre for Speech & Hearing
           </p>
-          <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-neutral-500">
+          <p className="mt-1 flex items-center gap-1.5 text-[10px] text-neutral-500">
             <Phone className="h-3 w-3 text-[#18AD8D]" strokeWidth={2} />
             +91 97118 71168 · +91 97118 71169
           </p>
-          <p className="mt-1 flex items-center gap-1.5 text-[11px] text-neutral-500">
-            <MapPin className="h-3 w-3 text-[#FF6503]" strokeWidth={2} />
-            Rohini · Green Park · Indirapuram · Sanjay Nagar
-          </p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] font-medium text-[#18AD8D]">
+          <p className="text-[10px] font-medium text-[#18AD8D]">
             hearinghope.in
           </p>
-          <p className="mt-1 text-[10px] text-neutral-400">
-            {brand} · Prices are MRP. Offers may apply.
+          <p className="mt-0.5 text-[9px] text-neutral-400">
+            {brand} · Prices are MRP.
           </p>
         </div>
       </div>
@@ -202,6 +254,11 @@ export default function PriceList() {
   const [defaultPage, setDefaultPage] = useState<CatalogPage | null>(null);
   const [pageEditorOpen, setPageEditorOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<CatalogPage | null>(null);
+  const [draggingPage, setDraggingPage] = useState<number | null>(null);
+  const [draggingModel, setDraggingModel] = useState<{
+    pageId: string;
+    index: number;
+  } | null>(null);
 
   useEffect(() => {
     const storedV3 = window.localStorage.getItem(STORAGE_KEY);
@@ -326,6 +383,14 @@ export default function PriceList() {
     setCatalog((current) => current.filter((item) => item.id !== id));
   }
 
+  function movePage(from: number, to: number) {
+    setPages((current) => moveItem(current, from, to));
+  }
+
+  function moveModel(pageId: string, from: number, to: number) {
+    setCatalog((current) => reorderPageProducts(current, pageId, from, to));
+  }
+
   return (
     <div className="min-h-screen bg-[#e8eeec] py-10 print:bg-white print:py-0">
       <div className="print:hidden fixed top-6 right-6 z-50 flex items-center gap-2">
@@ -391,7 +456,7 @@ export default function PriceList() {
 
       <div ref={contentRef} className="print-root space-y-8 print:space-y-0">
         <CoverPage brandNames={existingBrands} modelCount={catalog.length} />
-        {pageSections.map(({ page, items }) => {
+        {pageSections.map(({ page, items }, pageIndex) => {
           const typesOnPage = DEVICE_TYPE_ORDER.filter((type) =>
             items.some((item) => item.deviceTypes.includes(type)),
           );
@@ -401,22 +466,32 @@ export default function PriceList() {
           return (
             <section
               key={page.id}
+              onDragOver={(event) => {
+                if (draggingPage === null) return;
+                event.preventDefault();
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                if (draggingPage === null) return;
+                movePage(draggingPage, pageIndex);
+                setDraggingPage(null);
+              }}
               className={`print-page mx-auto flex min-h-[297mm] w-full max-w-[210mm] flex-col overflow-hidden bg-white shadow-[0_18px_50px_rgba(10,31,27,0.12)] print:max-w-none print:shadow-none print:break-before-page ${
                 items.length === 0 ? "print:hidden" : ""
-              }`}
+              } ${draggingPage === pageIndex ? "ring-2 ring-[#18AD8D]/40" : ""}`}
             >
-              <div className="flex h-1.5 w-full">
+              <div className="flex h-1 w-full">
                 <div className="h-full flex-[3] bg-[#18AD8D]" />
                 <div className="h-full flex-1 bg-[#FF6503]" />
               </div>
 
-              <div className="flex flex-1 flex-col px-10 pt-8 pb-8">
+              <div className="flex flex-1 flex-col px-6 pt-4 pb-4">
                 <ClinicHeader />
                 <BrandWave />
 
-                <div className="mt-8 mb-6 flex items-end justify-between gap-4">
+                <div className="mt-3 mb-3 flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-semibold tracking-[0.22em] text-[#FF6503] uppercase">
+                    <p className="text-[9px] font-semibold tracking-[0.22em] text-[#FF6503] uppercase">
                       Manufacturer
                     </p>
                     {BRAND_LOGOS[brand] ? (
@@ -424,22 +499,40 @@ export default function PriceList() {
                         <img
                           src={BRAND_LOGOS[brand]}
                           alt={brand}
-                          className="mt-3 h-12 max-w-[220px] w-auto object-contain object-left"
+                          className="mt-1.5 h-8 max-w-[180px] w-auto object-contain object-left"
                         />
                         <h2 className="sr-only">{brand}</h2>
                       </>
                     ) : (
-                      <h2 className="mt-3 text-[28px] leading-none font-semibold tracking-tight text-[#0A1F1B]">
+                      <h2 className="mt-1.5 text-[22px] leading-none font-semibold tracking-tight text-[#0A1F1B]">
                         {brand}
                       </h2>
                     )}
                     {pageLabel !== brand ? (
-                      <p className="mt-2 text-xs font-medium text-neutral-400">
+                      <p className="mt-1 text-[10px] font-medium text-neutral-400">
                         {pageLabel}
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="print:hidden flex items-center rounded-full border border-neutral-200 bg-white pr-1">
+                      <button
+                        type="button"
+                        draggable
+                        onDragStart={() => setDraggingPage(pageIndex)}
+                        onDragEnd={() => setDraggingPage(null)}
+                        className="cursor-grab px-1.5 py-1 text-neutral-400 hover:text-[#0A1F1B]"
+                        aria-label={`Drag ${pageLabel} page`}
+                      >
+                        <GripVertical className="h-3.5 w-3.5" />
+                      </button>
+                      <ReorderControls
+                        label={`${pageLabel} page`}
+                        index={pageIndex}
+                        total={pageSections.length}
+                        onMove={movePage}
+                      />
+                    </div>
                     <button
                       type="button"
                       onClick={() => openEditPage(page)}
@@ -489,43 +582,38 @@ export default function PriceList() {
                   </div>
                 ) : (
                 <div className="overflow-hidden rounded-xl border border-neutral-200">
-                  <table className="w-full border-collapse text-sm">
+                  <table className="w-full border-collapse text-[12px]">
                     <thead>
-                      <tr className="bg-[#0A1F1B] text-left text-[10px] font-semibold tracking-[0.14em] text-white uppercase">
-                        <th className="w-10 py-3 pr-2 pl-4 font-semibold">#</th>
-                        <th className="py-3 pr-3 font-semibold">Product</th>
-                        <th className="py-3 pr-3 text-center font-semibold">
+                      <tr className="bg-[#0A1F1B] text-left text-[9px] font-semibold tracking-[0.12em] text-white uppercase">
+                        <th className="print:hidden w-7 py-1.5 pr-0 pl-1.5 font-semibold">
+                          <span className="sr-only">Reorder</span>
+                        </th>
+                        <th className="w-8 py-1.5 pr-2 pl-1 font-semibold">#</th>
+                        <th className="py-1.5 pr-2 font-semibold">Product</th>
+                        <th className="py-1.5 pr-2 text-center font-semibold">
                           Type
                         </th>
-                        <th className="py-3 pr-3 text-center font-semibold">
+                        <th className="py-1.5 pr-2 text-center font-semibold">
                           Unit
                         </th>
-                        <th className="w-[72px] py-3 pr-2 text-center font-semibold">
-                          <span className="flex flex-col items-center gap-1 normal-case tracking-normal">
-                            <BatteryCharging
-                              className="h-3.5 w-3.5 text-[#18AD8D]"
-                              strokeWidth={2}
-                            />
-                            <span className="text-[8px] tracking-[0.12em] text-white/70 uppercase">
-                              Power
-                            </span>
-                          </span>
+                        <th className="w-12 py-1.5 pr-1 text-center font-semibold">
+                          <BatteryCharging
+                            className="mx-auto h-3.5 w-3.5 text-[#18AD8D]"
+                            strokeWidth={2}
+                          />
+                          <span className="sr-only">Rechargeable</span>
                         </th>
-                        <th className="w-[72px] py-3 pr-2 text-center font-semibold">
-                          <span className="flex flex-col items-center gap-1 normal-case tracking-normal">
-                            <Bluetooth
-                              className="h-3.5 w-3.5 text-[#FF6503]"
-                              strokeWidth={2}
-                            />
-                            <span className="text-[8px] tracking-[0.12em] text-white/70 uppercase">
-                              Connect
-                            </span>
-                          </span>
+                        <th className="w-12 py-1.5 pr-1 text-center font-semibold">
+                          <Bluetooth
+                            className="mx-auto h-3.5 w-3.5 text-[#FF6503]"
+                            strokeWidth={2}
+                          />
+                          <span className="sr-only">Bluetooth</span>
                         </th>
-                        <th className="py-3 pr-4 text-right font-semibold">
+                        <th className="py-1.5 pr-2 text-right font-semibold">
                           MRP
                         </th>
-                        <th className="print:hidden w-16 py-3 pr-3 text-right font-semibold">
+                        <th className="print:hidden w-14 py-1.5 pr-1.5 text-right font-semibold">
                           <span className="sr-only">Edit</span>
                         </th>
                       </tr>
@@ -534,35 +622,77 @@ export default function PriceList() {
                       {items.map((product, rowIndex) => (
                         <tr
                           key={product.id}
+                          onDragOver={(event) => {
+                            if (draggingModel?.pageId !== page.id) return;
+                            event.preventDefault();
+                          }}
+                          onDrop={(event) => {
+                            event.preventDefault();
+                            if (draggingModel?.pageId !== page.id) return;
+                            moveModel(page.id, draggingModel.index, rowIndex);
+                            setDraggingModel(null);
+                          }}
                           className={`break-inside-avoid ${
                             rowIndex % 2 === 0 ? "bg-white" : "bg-[#F4FBF9]"
+                          } ${
+                            draggingModel?.pageId === page.id &&
+                            draggingModel.index === rowIndex
+                              ? "bg-[#18AD8D]/10"
+                              : ""
                           }`}
                         >
-                          <td className="py-3.5 pr-2 pl-4 text-[12px] font-medium text-neutral-400">
+                          <td className="print:hidden py-1 pr-0 pl-1">
+                            <div className="flex items-center">
+                              <button
+                                type="button"
+                                draggable
+                                onDragStart={() =>
+                                  setDraggingModel({
+                                    pageId: page.id,
+                                    index: rowIndex,
+                                  })
+                                }
+                                onDragEnd={() => setDraggingModel(null)}
+                                className="cursor-grab p-0.5 text-neutral-300 hover:text-[#0A1F1B]"
+                                aria-label={`Drag ${product.name}`}
+                              >
+                                <GripVertical className="h-3.5 w-3.5" />
+                              </button>
+                              <ReorderControls
+                                label={product.name}
+                                index={rowIndex}
+                                total={items.length}
+                                onMove={(from, to) =>
+                                  moveModel(page.id, from, to)
+                                }
+                              />
+                            </div>
+                          </td>
+                          <td className="py-1 pr-2 pl-1 text-[11px] font-medium text-neutral-400">
                             {String(rowIndex + 1).padStart(2, "0")}
                           </td>
-                          <td className="py-3.5 pr-3 font-semibold text-[#0A1F1B]">
+                          <td className="py-1 pr-2 font-semibold text-[#0A1F1B]">
                             {product.name}
                           </td>
-                          <td className="py-3.5 pr-3">
-                            <div className="flex flex-wrap justify-center gap-1">
+                          <td className="py-1 pr-2">
+                            <div className="flex flex-wrap justify-center gap-0.5">
                               {product.deviceTypes.map((type) => (
                                 <span
                                   key={type}
                                   title={DEVICE_TYPE_LABELS[type]}
-                                  className="inline-flex min-w-[3.25rem] justify-center rounded-md border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-[#0A1F1B]"
+                                  className="inline-flex min-w-[2.5rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1.5 py-px text-[9px] font-semibold tracking-[0.08em] text-[#0A1F1B]"
                                 >
                                   {type}
                                 </span>
                               ))}
                             </div>
                           </td>
-                          <td className="py-3.5 pr-3 text-center">
-                            <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] font-medium text-neutral-600">
+                          <td className="py-1 pr-2 text-center">
+                            <span className="inline-flex rounded-full bg-neutral-100 px-2 py-px text-[10px] font-medium text-neutral-600">
                               {product.unit}
                             </span>
                           </td>
-                          <td className="py-3.5 pr-2 text-center">
+                          <td className="py-1 pr-1 text-center">
                             <FeatureMark
                               active={product.isRechargeable}
                               label="Rechargeable"
@@ -570,7 +700,7 @@ export default function PriceList() {
                               tone="teal"
                             />
                           </td>
-                          <td className="py-3.5 pr-2 text-center">
+                          <td className="py-1 pr-1 text-center">
                             <FeatureMark
                               active={product.hasBluetooth}
                               label="Bluetooth"
@@ -578,15 +708,15 @@ export default function PriceList() {
                               tone="orange"
                             />
                           </td>
-                          <td className="py-3.5 pr-4 text-right text-[15px] font-semibold tabular-nums text-[#FF6503]">
+                          <td className="py-1 pr-2 text-right text-[13px] font-semibold tabular-nums text-[#FF6503]">
                             {formatInr(product.mrp)}
                           </td>
-                          <td className="print:hidden py-3.5 pr-3">
-                            <div className="flex justify-end gap-1">
+                          <td className="print:hidden py-1 pr-1.5">
+                            <div className="flex justify-end gap-0.5">
                               <button
                                 type="button"
                                 onClick={() => openEdit(product)}
-                                className="rounded-full p-1.5 text-neutral-400 hover:bg-white hover:text-[#18AD8D]"
+                                className="rounded-full p-1 text-neutral-400 hover:bg-white hover:text-[#18AD8D]"
                                 aria-label={`Edit ${product.name}`}
                               >
                                 <Pencil className="h-3.5 w-3.5" />
@@ -594,7 +724,7 @@ export default function PriceList() {
                               <button
                                 type="button"
                                 onClick={() => deleteProduct(product.id)}
-                                className="rounded-full p-1.5 text-neutral-400 hover:bg-white hover:text-[#FF6503]"
+                                className="rounded-full p-1 text-neutral-400 hover:bg-white hover:text-[#FF6503]"
                                 aria-label={`Delete ${product.name}`}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -608,7 +738,7 @@ export default function PriceList() {
                 </div>
                 )}
 
-                <div className="mt-3 space-y-1 text-[10px] leading-relaxed text-neutral-400">
+                <div className="mt-2 space-y-0.5 text-[9px] leading-relaxed text-neutral-400">
                   <p>
                     {typesOnPage
                       .map((type) => `${type} ${DEVICE_TYPE_LABELS[type]}`)
