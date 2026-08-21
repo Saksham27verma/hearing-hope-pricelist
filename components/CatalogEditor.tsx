@@ -22,6 +22,8 @@ type Draft = {
   mrp: string;
   unit: Unit;
   warrantyYears: WarrantyYears;
+  channels: string;
+  description: string;
   deviceTypes: DeviceType[];
   isRechargeable: boolean;
   hasBluetooth: boolean;
@@ -34,6 +36,8 @@ const emptyDraft = (page?: CatalogPage | null): Draft => ({
   mrp: "",
   unit: "Pair",
   warrantyYears: 2,
+  channels: "",
+  description: "",
   deviceTypes: [],
   isRechargeable: true,
   hasBluetooth: true,
@@ -48,6 +52,8 @@ function toDraft(product: HearingAid): Draft {
     mrp: String(product.mrp),
     unit: product.unit,
     warrantyYears: product.warrantyYears === 4 ? 4 : 2,
+    channels: product.channels ?? "",
+    description: product.description ?? "",
     deviceTypes: [...product.deviceTypes],
     isRechargeable: product.isRechargeable,
     hasBluetooth: product.hasBluetooth,
@@ -135,6 +141,8 @@ export default function CatalogEditor({
       mrp,
       unit: draft.unit,
       warrantyYears: draft.warrantyYears,
+      channels: draft.channels.trim(),
+      description: draft.description.trim(),
       isRechargeable: draft.isRechargeable,
       hasBluetooth: draft.hasBluetooth,
       deviceTypes: draft.deviceTypes,
@@ -211,7 +219,7 @@ export default function CatalogEditor({
             />
           </label>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <label className="grid gap-1.5 text-sm">
               <span className="font-medium text-[#0A1F1B]">MRP (₹)</span>
               <input
@@ -259,7 +267,43 @@ export default function CatalogEditor({
                 ))}
               </select>
             </label>
+            <label className="grid gap-1.5 text-sm">
+              <span className="font-medium text-[#0A1F1B]">Channels/Band</span>
+              <input
+                value={draft.channels}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    channels: event.target.value,
+                  }))
+                }
+                placeholder="48"
+                className="rounded-lg border border-neutral-200 px-3 py-2 outline-none focus:border-[#18AD8D]"
+              />
+            </label>
           </div>
+
+          <label className="grid gap-1.5 text-sm">
+            <span className="font-medium text-[#0A1F1B]">
+              Description{" "}
+              <span className="font-normal text-neutral-400">(optional)</span>
+            </span>
+            <textarea
+              value={draft.description}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  description: event.target.value,
+                }))
+              }
+              placeholder="Short note shown under the model name"
+              rows={2}
+              className="resize-y rounded-lg border border-neutral-200 px-3 py-2 outline-none focus:border-[#18AD8D]"
+            />
+            <span className="text-xs text-neutral-500">
+              Leave blank to hide it on the price list.
+            </span>
+          </label>
 
           <fieldset>
             <legend className="mb-2 text-sm font-medium text-[#0A1F1B]">

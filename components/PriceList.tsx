@@ -47,6 +47,14 @@ function normalizeCatalog(items: HearingAid[]): HearingAid[] {
       ...item,
       deviceTypes,
       warrantyYears: item.warrantyYears === 4 ? 4 : 2,
+      channels:
+        typeof item.channels === "string"
+          ? item.channels.trim()
+          : item.channels != null
+            ? String(item.channels)
+            : "",
+      description:
+        typeof item.description === "string" ? item.description.trim() : "",
       pageId:
         item.pageId ||
         `page-${item.brand.toLowerCase().replace(/\s+/g, "-")}`,
@@ -595,6 +603,9 @@ export default function PriceList() {
                           Type
                         </th>
                         <th className="py-1.5 pr-2 text-center font-semibold">
+                          Channels/Band
+                        </th>
+                        <th className="py-1.5 pr-2 text-center font-semibold">
                           Unit
                         </th>
                         <th className="py-1.5 pr-2 text-center font-semibold">
@@ -675,8 +686,15 @@ export default function PriceList() {
                           <td className="py-1 pr-2 pl-1 text-[11px] font-medium text-neutral-400">
                             {String(rowIndex + 1).padStart(2, "0")}
                           </td>
-                          <td className="py-1 pr-2 font-semibold text-[#0A1F1B]">
-                            {product.name}
+                          <td className="py-1 pr-2">
+                            <p className="font-semibold text-[#0A1F1B]">
+                              {product.name}
+                            </p>
+                            {product.description.trim() ? (
+                              <p className="mt-0.5 text-[10px] font-normal leading-snug text-neutral-500">
+                                {product.description}
+                              </p>
+                            ) : null}
                           </td>
                           <td className="py-1 pr-2">
                             <div className="flex flex-wrap justify-center gap-0.5">
@@ -690,6 +708,9 @@ export default function PriceList() {
                                 </span>
                               ))}
                             </div>
+                          </td>
+                          <td className="py-1 pr-2 text-center tabular-nums font-semibold text-[#0A1F1B]">
+                            {product.channels.trim() || "—"}
                           </td>
                           <td className="py-1 pr-2 text-center">
                             <span className="inline-flex rounded-full bg-neutral-100 px-2 py-px text-[10px] font-medium text-neutral-600">

@@ -17,6 +17,8 @@ export type HearingAid = {
   mrp: number;
   unit: Unit;
   warrantyYears: WarrantyYears;
+  channels: string;
+  description: string;
   isRechargeable: boolean;
   hasBluetooth: boolean;
   deviceTypes: DeviceType[];
@@ -67,7 +69,7 @@ function defaultPageId(brand: string) {
   );
 }
 
-const rawProducts: Omit<HearingAid, "pageId" | "warrantyYears">[] = [
+const rawProducts: Omit<HearingAid, "pageId" | "warrantyYears" | "channels" | "description">[] = [
   {
     id: "ph-01",
     brand: "Phonak",
@@ -304,6 +306,8 @@ export const products: HearingAid[] = rawProducts.map((item) => ({
   ...item,
   pageId: defaultPageId(item.brand),
   warrantyYears: item.mrp >= 250000 ? 4 : 2,
+  channels: "",
+  description: "",
 }));
 
 export function labelForPage(page: CatalogPage, pages: CatalogPage[]) {
