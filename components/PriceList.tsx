@@ -463,6 +463,14 @@ export default function PriceList() {
     });
   }
 
+  function updateChannels(id: string, channels: string) {
+    setCatalog((current) =>
+      current.map((item) =>
+        item.id === id ? { ...item, channels } : item,
+      ),
+    );
+  }
+
   function deleteProduct(id: string) {
     setCatalog((current) => current.filter((item) => item.id !== id));
   }
@@ -784,8 +792,21 @@ export default function PriceList() {
                               ))}
                             </div>
                           </td>
-                          <td className="py-1 pr-2 text-center tabular-nums font-semibold text-[#0A1F1B]">
-                            {product.channels.trim() || "—"}
+                          <td className="py-1 pr-2 text-center">
+                            <input
+                              type="text"
+                              value={product.channels}
+                              placeholder="—"
+                              aria-label={`Channels for ${product.name}`}
+                              onChange={(event) =>
+                                updateChannels(product.id, event.target.value)
+                              }
+                              onClick={(event) => event.stopPropagation()}
+                              className="print:hidden mx-auto block w-[4.75rem] rounded border border-transparent bg-transparent px-1 py-0.5 text-center text-[12px] tabular-nums font-semibold text-[#0A1F1B] outline-none placeholder:font-medium placeholder:text-neutral-300 hover:border-neutral-200 hover:bg-white focus:border-[#18AD8D] focus:bg-white"
+                            />
+                            <span className="hidden print:inline tabular-nums font-semibold text-[#0A1F1B]">
+                              {product.channels.trim() || "—"}
+                            </span>
                           </td>
                           <td className="py-1 pr-2 text-center">
                             <span className="inline-flex rounded-full bg-neutral-100 px-2 py-px text-[10px] font-medium text-neutral-600">
