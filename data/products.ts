@@ -24,6 +24,11 @@ export type HearingAid = {
   deviceTypes: DeviceType[];
 };
 
+export type StoredCatalog = {
+  pages: CatalogPage[];
+  products: HearingAid[];
+};
+
 export const DEVICE_TYPE_ORDER: DeviceType[] = [
   "BTE",
   "RIC",

@@ -1,0 +1,1849 @@
+{
+  "pages": [
+    {
+      "id": "page-signia",
+      "brand": "Signia"
+    },
+    {
+      "id": "page-1787235204846",
+      "brand": "Signia"
+    },
+    {
+      "id": "page-1787235772763",
+      "brand": "Phonak"
+    },
+    {
+      "id": "page-1787237564909",
+      "brand": "Bernafon"
+    },
+    {
+      "id": "page-1787238108085",
+      "brand": "ReSound"
+    },
+    {
+      "id": "page-1787239660648",
+      "brand": "Unitron"
+    }
+  ],
+  "products": [
+    {
+      "id": "model-1787234371080",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Styletto 1IX",
+      "mrp": 149990,
+      "unit": "Pair",
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "warrantyYears": 2,
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234418188",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Styletto 7IX",
+      "mrp": 724990,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234439059",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Pure C&Go BCT 1IX",
+      "mrp": 149990,
+      "unit": "Pair",
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "warrantyYears": 2,
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234463738",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Pure C&Go BCT 1IX",
+      "mrp": 84990,
+      "unit": "Single",
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "warrantyYears": 2,
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234489890",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Pure C&Go BCT 7IX",
+      "mrp": 799990,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234549717",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Pure C&Go 1IX",
+      "mrp": 144990,
+      "unit": "Pair",
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "warrantyYears": 2,
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234565238",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Pure C&Go 1IX",
+      "mrp": 77990,
+      "unit": "Single",
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "warrantyYears": 2,
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234612843",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Motion C&Go 1IX M/P/SP",
+      "mrp": 144990,
+      "unit": "Pair",
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "warrantyYears": 2,
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234631979",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Motion C&Go 1IX M/P/SP",
+      "mrp": 72990,
+      "unit": "Single",
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "warrantyYears": 2,
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234667613",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Motion C&Go 7IX M/P/SP",
+      "mrp": 709990,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234769636",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Motion C&Go 7IX M/P/SP",
+      "mrp": 364990,
+      "unit": "Single",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234853873",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Active IX",
+      "mrp": 159990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "ITE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234901282",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Active Pro IX",
+      "mrp": 324990,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "ITE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234930573",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Silk C&Go 1IX",
+      "mrp": 139990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "CIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234953095",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Silk C&Go 7IX",
+      "mrp": 724990,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "CIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787234988575",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Insio C&Go CIC 1IX",
+      "mrp": 144990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "CIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235005333",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Insio C&Go CIC 1IX",
+      "mrp": 77990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "CIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235051329",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Insio 1IX",
+      "mrp": 51990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "CIC",
+        "IIC",
+        "ITE",
+        "ITC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235286234",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Silk C&Go CROS 1IX",
+      "mrp": 119990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "CIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235309874",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Kit Styletto CROS 1IX",
+      "mrp": 134990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235337992",
+      "pageId": "page-signia",
+      "brand": "Signia",
+      "name": "Pure 312 1AX",
+      "mrp": 52990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235367613",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Intuis 4.0 M/P/SP",
+      "mrp": 31990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235391663",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Intuis 4.1 M/P/SP",
+      "mrp": 37990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235492401",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Orion C&Go 50 P/SP/RIC",
+      "mrp": 32990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235517509",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Orion C&Go 75 P/SP/RIC",
+      "mrp": 35990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235554439",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Orion C&Go 100 P/SP/RIC",
+      "mrp": 40990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235588602",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Orion C&Go 200 P/SP/RIC",
+      "mrp": 42990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235631198",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Sirion Connect P/SP/RIC 75",
+      "mrp": 32990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235697979",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Prompt P/SP/S/Click",
+      "mrp": 20990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE",
+        "CIC",
+        "ITC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235721837",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Fast P",
+      "mrp": 10990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235741071",
+      "pageId": "page-1787235204846",
+      "brand": "Signia",
+      "name": "Fun P/SP",
+      "mrp": 13990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235845962",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Terra S/M/P/SP/UP",
+      "mrp": 33000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235921067",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Terra + S/M/P/SP/UP",
+      "mrp": 42000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787235982189",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Terra + RIC - R S/M/P/UP",
+      "mrp": 104000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236138280",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Terra + RIC-R S/M/P/UP",
+      "mrp": 62000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236226329",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Naida L-30 SP/UP",
+      "mrp": 63000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236267441",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Naida L-50 SP/UP",
+      "mrp": 113000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236292477",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Naida L-70 SP/UP",
+      "mrp": 195000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236313403",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Naida L-90 SP/UP",
+      "mrp": 300000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236409082",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Naida L-30 PR",
+      "mrp": 138000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236501138",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Naida L-30 PR",
+      "mrp": 77000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236561943",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Naida L-50 PR",
+      "mrp": 240000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236589038",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Naida L-50 PR",
+      "mrp": 128000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236745116",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Audeo L-30 R S/M/P/UP",
+      "mrp": 138000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236761430",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Audeo L-30 R S/M/P/UP",
+      "mrp": 79000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236871585",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Virto I-30 R M/P/SP/UP",
+      "mrp": 144000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "ITC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236914537",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Virto I-30 R M/P/SP/UP",
+      "mrp": 84000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "ITC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787236978425",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Virto I-30 10 NW M/P/SP",
+      "mrp": 60000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "CIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237092648",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Audeo I-30 R",
+      "mrp": 154000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237124872",
+      "pageId": "page-1787235772763",
+      "brand": "Phonak",
+      "name": "Audeo I-30 R",
+      "mrp": 89000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237663280",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Entra A1",
+      "mrp": 29990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "RIC",
+        "CIC",
+        "IIC",
+        "ITE",
+        "ITC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237682220",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Entra A1",
+      "mrp": 26990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237709841",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Entra A2",
+      "mrp": 34990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237722904",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Entra A2",
+      "mrp": 31990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237790146",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Entra B 10",
+      "mrp": 84990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237824406",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Entra B 10",
+      "mrp": 42990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237847345",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Entra B 20",
+      "mrp": 95990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237870857",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Entra B 20",
+      "mrp": 50990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237905915",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Leox 3 SP/UP",
+      "mrp": 49990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237927716",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Leox 7  SP",
+      "mrp": 149990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237942302",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Leox 7 UP",
+      "mrp": 159990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": false,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237983399",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Alpha 1",
+      "mrp": 119990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787237996386",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Alpha 1",
+      "mrp": 69990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238014028",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Alpha 3",
+      "mrp": 169990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238023390",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Alpha 3",
+      "mrp": 94990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238058195",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Encanta 100 Connect",
+      "mrp": 349990,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238073735",
+      "pageId": "page-1787237564909",
+      "brand": "Bernafon",
+      "name": "Encanta 100 Connect",
+      "mrp": 194990,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238172448",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Vivia 9",
+      "mrp": 849995,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238198405",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Vivia 4",
+      "mrp": 96995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238233002",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Vivia 4",
+      "mrp": 173995,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238256680",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Vivia 9",
+      "mrp": 414995,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238270843",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Vivia 4",
+      "mrp": 83995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238348448",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Nexia 4",
+      "mrp": 173995,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "ITC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238417907",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Nexia 4",
+      "mrp": 96995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "ITC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238611649",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Nexia HP/NP",
+      "mrp": 148995,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238669498",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Enzo IA 3 SP",
+      "mrp": 129995,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238689414",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Enzo IA 3 SP",
+      "mrp": 69995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238719603",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Enzo Q 5 SP",
+      "mrp": 71995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238764385",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Savi 4",
+      "mrp": 129995,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238778097",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Savi 4",
+      "mrp": 71495,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238801356",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Savi 3",
+      "mrp": 51495,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238819043",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Savi 2",
+      "mrp": 29495,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238872897",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 461",
+      "mrp": 109995,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238902748",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 461/462",
+      "mrp": 38995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238921930",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 361/362",
+      "mrp": 28995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238936276",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 261/262",
+      "mrp": 22495,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787238964600",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 298 SP",
+      "mrp": 28495,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239007626",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 488-HP / 477-NP",
+      "mrp": 39995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239031902",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 388-HP / 377-NP",
+      "mrp": 29995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239053371",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 288-HP / 277-NP",
+      "mrp": 26995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239082799",
+      "pageId": "page-1787238108085",
+      "brand": "ReSound",
+      "name": "Key 188-HP/ 177-NP",
+      "mrp": 20995,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239702429",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V9-R",
+      "mrp": 584000,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239728602",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V9-R",
+      "mrp": 302000,
+      "unit": "Single",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239773488",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V1-R",
+      "mrp": 104000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239800296",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V1-R",
+      "mrp": 62000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239850099",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V3-R",
+      "mrp": 126000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239867158",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V3-R",
+      "mrp": 73000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239890928",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V5-R",
+      "mrp": 212000,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239902187",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V5-R",
+      "mrp": 116000,
+      "unit": "Single",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239916190",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V7-R",
+      "mrp": 390000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239935474",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Moxi V7-R",
+      "mrp": 205000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787239997666",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V9-TR",
+      "mrp": 584000,
+      "unit": "Pair",
+      "warrantyYears": 4,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240059014",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V1-TR",
+      "mrp": 104000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240071001",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V1-TR",
+      "mrp": 60000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240088530",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V3-TR",
+      "mrp": 126000,
+      "unit": "Pair",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240108318",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V3-TR",
+      "mrp": 71000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": true,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240139676",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V9-UP",
+      "mrp": 295000,
+      "unit": "Single",
+      "warrantyYears": 4,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240156772",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V1-UP",
+      "mrp": 46000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240178300",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V3-UP",
+      "mrp": 60000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240199713",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V5-UP",
+      "mrp": 100000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240215668",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Stride V7-UP",
+      "mrp": 185000,
+      "unit": "Single",
+      "warrantyYears": 4,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE"
+      ],
+      "channels": "",
+      "description": ""
+    },
+    {
+      "id": "model-1787240326109",
+      "pageId": "page-1787239660648",
+      "brand": "Unitron",
+      "name": "Ativo S/M/P/SP/UP",
+      "mrp": 37000,
+      "unit": "Single",
+      "warrantyYears": 2,
+      "isRechargeable": false,
+      "hasBluetooth": true,
+      "deviceTypes": [
+        "BTE",
+        "RIC"
+      ],
+      "channels": "",
+      "description": ""
+    }
+  ]
+}

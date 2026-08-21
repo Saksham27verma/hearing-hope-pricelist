@@ -25,6 +25,7 @@ import {
   type CatalogPage,
   type DeviceType,
   type HearingAid,
+  type StoredCatalog,
 } from "@/data/products";
 import CatalogEditor from "@/components/CatalogEditor";
 import { ClosingPage, CoverPage } from "@/components/CatalogPages";
@@ -114,6 +115,87 @@ function reorderPageProducts(
   return items.map((item) =>
     item.pageId === pageId ? reordered[index++] : item,
   );
+}
+
+function parseStoredCatalog(raw: string | null): StoredCatalog | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as StoredCatalog | HearingAid[];
+    if (
+      parsed &&
+      !Array.isArray(parsed) &&
+      Array.isArray(parsed.pages) &&
+      Array.isArray(parsed.products)
+    ) {
+      return {
+        pages: parsed.pages,
+        products: normalizeCatalog(parsed.products),
+      };
+    }
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const products = normalizeCatalog(parsed);
+      const nextPages = pagesFromProducts(products);
+      const pageIdByBrand = new Map(
+        nextPages.map((page) => [page.brand, page.id]),
+      );
+      return {
+        pages: nextPages,
+        products: products.map((item) => ({
+          ...item,
+          pageId: item.pageId || pageIdByBrand.get(item.brand) || nextPages[0]?.id,
+        })),
+      };
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function readLocalCatalog(): StoredCatalog | null {
+  return (
+    parseStoredCatalog(window.localStorage.getItem(STORAGE_KEY)) ??
+    parseStoredCatalog(window.localStorage.getItem(LEGACY_STORAGE_KEY))
+  );
+}
+
+function cacheLocalCatalog(catalog: StoredCatalog) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(catalog));
+}
+
+async function fetchServerCatalog(): Promise<StoredCatalog | null> {
+  try {
+    const response = await fetch("/api/catalog", { cache: "no-store" });
+    if (!response.ok) return null;
+    return parseStoredCatalog(await response.text());
+  } catch {
+    return null;
+  }
+}
+
+async function saveServerCatalog(catalog: StoredCatalog): Promise<boolean> {
+  try {
+    const response = await fetch("/api/catalog", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(catalog),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+function richerCatalog(
+  a: StoredCatalog | null,
+  b: StoredCatalog | null,
+): StoredCatalog | null {
+  if (!a) return b;
+  if (!b) return a;
+  if (a.products.length !== b.products.length) {
+    return a.products.length > b.products.length ? a : b;
+  }
+  return a.pages.length >= b.pages.length ? a : b;
 }
 
 function ReorderControls({
@@ -268,57 +350,50 @@ export default function PriceList() {
     pageId: string;
     index: number;
   } | null>(null);
+  const skipNextSave = useRef(true);
 
   useEffect(() => {
-    const storedV3 = window.localStorage.getItem(STORAGE_KEY);
-    if (storedV3) {
-      try {
-        const parsed = JSON.parse(storedV3) as {
-          pages?: CatalogPage[];
-          products?: HearingAid[];
-        };
-        if (Array.isArray(parsed.pages) && Array.isArray(parsed.products)) {
-          setPages(parsed.pages);
-          setCatalog(normalizeCatalog(parsed.products));
-          setHydrated(true);
-          return;
-        }
-      } catch {
-        // Fall through to legacy data.
+    let cancelled = false;
+
+    async function hydrate() {
+      const local = readLocalCatalog();
+      const server = await fetchServerCatalog();
+      const next = richerCatalog(local, server) ?? {
+        pages: defaultPages,
+        products: defaultProducts,
+      };
+      if (cancelled) return;
+
+      setPages(next.pages);
+      setCatalog(next.products);
+      cacheLocalCatalog(next);
+      if (
+        local &&
+        (!server || local.products.length > server.products.length)
+      ) {
+        await saveServerCatalog(local);
       }
+      if (!cancelled) setHydrated(true);
     }
 
-    const storedV2 = window.localStorage.getItem(LEGACY_STORAGE_KEY);
-    if (storedV2) {
-      try {
-        const parsed = JSON.parse(storedV2) as HearingAid[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const products = normalizeCatalog(parsed);
-          const nextPages = pagesFromProducts(products);
-          const pageIdByBrand = new Map(
-            nextPages.map((page) => [page.brand, page.id]),
-          );
-          setPages(nextPages);
-          setCatalog(
-            products.map((item) => ({
-              ...item,
-              pageId: item.pageId || pageIdByBrand.get(item.brand) || nextPages[0]?.id,
-            })),
-          );
-        }
-      } catch {
-        // Keep the default catalog if stored data is invalid.
-      }
-    }
-    setHydrated(true);
+    void hydrate();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ pages, products: catalog }),
-    );
+    const payload: StoredCatalog = { pages, products: catalog };
+    cacheLocalCatalog(payload);
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void saveServerCatalog(payload);
+    }, 400);
+    return () => window.clearTimeout(timer);
   }, [pages, catalog, hydrated]);
 
   const pageSections = useMemo(
