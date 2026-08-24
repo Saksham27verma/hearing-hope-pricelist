@@ -486,6 +486,9 @@ export default function PriceList() {
   return (
     <div className="min-h-screen bg-[#e8eeec] py-10 print:bg-white print:py-0">
       <div className="print:hidden fixed top-6 right-6 z-50 flex items-center gap-2">
+        <div className="rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-[#0A1F1B] shadow-lg ring-1 ring-black/5">
+          {catalog.length} models
+        </div>
         <button
           type="button"
           onClick={openAddPage}

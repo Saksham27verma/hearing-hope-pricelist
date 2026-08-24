@@ -7,17 +7,12 @@ import {
   type HearingAid,
   type StoredCatalog,
 } from "@/data/products";
+import { ensureCatalogSchema, getDatabaseUrl, sql } from "@/lib/db";
 
-const catalogPath = path.join(process.cwd(), "data", "catalog.json");
-const memoryKey = "__hearingHopeCatalog";
+const catalogFilePath = path.join(process.cwd(), "data", "catalog.json");
+const CATALOG_ID = "main";
 
-function memoryStore(): { current: StoredCatalog | null } {
-  const globalRef = globalThis as typeof globalThis & {
-    [memoryKey]?: { current: StoredCatalog | null };
-  };
-  globalRef[memoryKey] ??= { current: null };
-  return globalRef[memoryKey];
-}
+let cachedCatalog: StoredCatalog | null = null;
 
 function isCatalog(value: unknown): value is StoredCatalog {
   if (!value || typeof value !== "object") return false;
@@ -30,55 +25,6 @@ export function emptyCatalog(): StoredCatalog {
     pages: defaultPages,
     products: defaultProducts,
   };
-}
-
-export async function readCatalog(): Promise<StoredCatalog> {
-  const memory = memoryStore().current;
-  let fromFile: StoredCatalog | null = null;
-  try {
-    const raw = await fs.readFile(catalogPath, "utf8");
-    const parsed: unknown = JSON.parse(raw);
-    if (isCatalog(parsed) && parsed.products.length > 0) {
-      fromFile = parsed;
-    }
-  } catch {
-    // Fall through if the file is missing.
-  }
-
-  const candidates = [memory, fromFile].filter(
-    (item): item is StoredCatalog => !!item && item.products.length > 0,
-  );
-  if (candidates.length === 0) return emptyCatalog();
-
-  const best = candidates.reduce((a, b) =>
-    a.products.length >= b.products.length ? a : b,
-  );
-  memoryStore().current = best;
-  return best;
-}
-
-export async function writeCatalog(catalog: StoredCatalog): Promise<StoredCatalog> {
-  const existing = await readCatalog();
-  if (existing.products.length - catalog.products.length >= 10) {
-    return existing;
-  }
-  const payload: StoredCatalog = {
-    pages: catalog.pages,
-    products: catalog.products,
-  };
-  memoryStore().current = payload;
-  try {
-    await fs.mkdir(path.dirname(catalogPath), { recursive: true });
-    await fs.writeFile(
-      catalogPath,
-      `${JSON.stringify(payload, null, 2)}\n`,
-      "utf8",
-    );
-  } catch {
-    // Vercel’s filesystem is read-only; memory still holds the catalog
-    // for this server instance.
-  }
-  return payload;
 }
 
 export function validateCatalog(value: unknown): StoredCatalog | null {
@@ -102,4 +48,99 @@ export function validateCatalog(value: unknown): StoredCatalog | null {
   );
   if (pages.length === 0) return null;
   return { pages, products };
+}
+
+async function readCatalogFile(): Promise<StoredCatalog | null> {
+  try {
+    const raw = await fs.readFile(catalogFilePath, "utf8");
+    return validateCatalog(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+async function writeCatalogFile(catalog: StoredCatalog) {
+  try {
+    await fs.mkdir(path.dirname(catalogFilePath), { recursive: true });
+    await fs.writeFile(
+      catalogFilePath,
+      `${JSON.stringify(catalog, null, 2)}\n`,
+      "utf8",
+    );
+  } catch {
+    // Read-only hosts such as Vercel still persist through the database.
+  }
+}
+
+async function readCatalogFromDb(): Promise<StoredCatalog | null> {
+  if (!getDatabaseUrl()) return null;
+  await ensureCatalogSchema();
+  const rows = await sql()`
+    SELECT pages, products
+    FROM catalogs
+    WHERE id = ${CATALOG_ID}
+    LIMIT 1
+  `;
+  const row = rows[0] as
+    | { pages: unknown; products: unknown }
+    | undefined;
+  if (!row) return null;
+  return validateCatalog({
+    pages: row.pages,
+    products: row.products,
+  });
+}
+
+async function writeCatalogToDb(catalog: StoredCatalog) {
+  if (!getDatabaseUrl()) return;
+  await ensureCatalogSchema();
+  const pages = JSON.stringify(catalog.pages);
+  const products = JSON.stringify(catalog.products);
+  await sql()`
+    INSERT INTO catalogs (id, pages, products, updated_at)
+    VALUES (${CATALOG_ID}, ${pages}::jsonb, ${products}::jsonb, NOW())
+    ON CONFLICT (id) DO UPDATE SET
+      pages = EXCLUDED.pages,
+      products = EXCLUDED.products,
+      updated_at = NOW()
+  `;
+}
+
+export async function readCatalog(): Promise<StoredCatalog> {
+  if (cachedCatalog && cachedCatalog.products.length > 0) {
+    return cachedCatalog;
+  }
+
+  const fromDb = await readCatalogFromDb();
+  if (fromDb && fromDb.products.length > 0) {
+    cachedCatalog = fromDb;
+    return fromDb;
+  }
+
+  const fromFile = await readCatalogFile();
+  if (fromFile && fromFile.products.length > 0) {
+    if (getDatabaseUrl()) {
+      await writeCatalogToDb(fromFile);
+    }
+    cachedCatalog = fromFile;
+    return fromFile;
+  }
+
+  cachedCatalog = emptyCatalog();
+  return cachedCatalog;
+}
+
+export async function writeCatalog(catalog: StoredCatalog): Promise<StoredCatalog> {
+  const existing = await readCatalog();
+  if (existing.products.length - catalog.products.length >= 10) {
+    return existing;
+  }
+  const payload: StoredCatalog = {
+    pages: catalog.pages,
+    products: catalog.products,
+  };
+  await writeCatalogToDb(payload);
+  await writeCatalogFile(payload);
+  cachedCatalog = payload;
+  return payload;
 }
