@@ -1,8 +1,22 @@
-export type DeviceType = "BTE" | "RIC" | "CIC" | "IIC" | "ITE" | "ITC";
+export type DeviceType =
+  | "BTE"
+  | "RIC"
+  | "CIC"
+  | "IIC"
+  | "ITE"
+  | "ITC"
+  | "CHG"
+  | "REC";
 export type Unit = "Pair" | "Single";
-export type WarrantyYears = 2 | 4;
+export type WarrantyYears = 1 | 2 | 3 | 4;
 
-export const WARRANTY_OPTIONS: WarrantyYears[] = [2, 4];
+export const WARRANTY_OPTIONS: WarrantyYears[] = [1, 2, 3, 4];
+
+export function normalizeWarrantyYears(value: unknown): WarrantyYears {
+  const years = Number(value);
+  if (years === 1 || years === 2 || years === 3 || years === 4) return years;
+  return 2;
+}
 
 export type CatalogPage = {
   id: string;
@@ -36,6 +50,8 @@ export const DEVICE_TYPE_ORDER: DeviceType[] = [
   "IIC",
   "ITE",
   "ITC",
+  "CHG",
+  "REC",
 ];
 
 export const DEVICE_TYPE_LABELS: Record<DeviceType, string> = {
@@ -45,6 +61,8 @@ export const DEVICE_TYPE_LABELS: Record<DeviceType, string> = {
   IIC: "Invisible in Canal",
   ITE: "In the Ear",
   ITC: "In the Canal",
+  CHG: "Charger",
+  REC: "Receiver",
 };
 
 export const BRAND_LOGOS: Record<string, string> = {

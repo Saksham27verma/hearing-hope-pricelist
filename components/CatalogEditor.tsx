@@ -7,6 +7,7 @@ import {
   DEVICE_TYPE_ORDER,
   WARRANTY_OPTIONS,
   labelForPage,
+  normalizeWarrantyYears,
   type CatalogPage,
   type DeviceType,
   type HearingAid,
@@ -51,7 +52,7 @@ function toDraft(product: HearingAid): Draft {
     name: product.name,
     mrp: String(product.mrp),
     unit: product.unit,
-    warrantyYears: product.warrantyYears === 4 ? 4 : 2,
+    warrantyYears: normalizeWarrantyYears(product.warrantyYears),
     channels: product.channels ?? "",
     description: product.description ?? "",
     deviceTypes: [...product.deviceTypes],
@@ -266,7 +267,7 @@ export default function CatalogEditor({
                 >
                   {WARRANTY_OPTIONS.map((years) => (
                     <option key={years} value={years}>
-                      {years} years
+                      {years} {years === 1 ? "year" : "years"}
                     </option>
                   ))}
                 </select>

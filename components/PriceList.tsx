@@ -21,6 +21,7 @@ import {
   DEVICE_TYPE_ORDER,
   defaultPages,
   labelForPage,
+  normalizeWarrantyYears,
   products as defaultProducts,
   type CatalogPage,
   type DeviceType,
@@ -47,7 +48,7 @@ function normalizeCatalog(items: HearingAid[]): HearingAid[] {
     return {
       ...item,
       deviceTypes,
-      warrantyYears: item.warrantyYears === 4 ? 4 : 2,
+      warrantyYears: normalizeWarrantyYears(item.warrantyYears),
       channels:
         typeof item.channels === "string"
           ? item.channels.trim()
