@@ -404,10 +404,10 @@ export default function PriceList() {
   );
 
   useLayoutEffect(() => {
-    const root = packingProbeRef.current;
-    if (!root || catalog.length === 0) return;
+    const probe = packingProbeRef.current;
+    if (probe == null || catalog.length === 0) return;
 
-    function measure() {
+    function measure(root: HTMLDivElement) {
       const page = root.querySelector("[data-packing-page]");
       const inner = root.querySelector("[data-packing-inner]");
       const top = root.querySelector("[data-packing-top]");
@@ -455,10 +455,10 @@ export default function PriceList() {
       });
     }
 
-    measure();
+    measure(probe);
     let cancelled = false;
     void document.fonts.ready.then(() => {
-      if (!cancelled) measure();
+      if (!cancelled) measure(probe);
     });
     return () => {
       cancelled = true;
