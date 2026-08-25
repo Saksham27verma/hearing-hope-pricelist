@@ -14,6 +14,7 @@ import {
   Plus,
   Printer,
   Trash2,
+  Upload,
 } from "lucide-react";
 import {
   BRAND_LOGOS,
@@ -30,6 +31,7 @@ import {
 } from "@/data/products";
 import CatalogEditor from "@/components/CatalogEditor";
 import { ClosingPage, CoverPage } from "@/components/CatalogPages";
+import CsvImport from "@/components/CsvImport";
 import PageEditor from "@/components/PageEditor";
 
 const STORAGE_KEY = "hearing-hope-catalog-v3";
@@ -346,6 +348,8 @@ export default function PriceList() {
   const [defaultPage, setDefaultPage] = useState<CatalogPage | null>(null);
   const [pageEditorOpen, setPageEditorOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<CatalogPage | null>(null);
+  const [csvImportOpen, setCsvImportOpen] = useState(false);
+  const [csvImportPage, setCsvImportPage] = useState<CatalogPage | null>(null);
   const [draggingPage, setDraggingPage] = useState<number | null>(null);
   const [draggingModel, setDraggingModel] = useState<{
     pageId: string;
@@ -432,6 +436,11 @@ export default function PriceList() {
     setPageEditorOpen(true);
   }
 
+  function openCsvImport(page: CatalogPage) {
+    setCsvImportPage(page);
+    setCsvImportOpen(true);
+  }
+
   function savePage(page: CatalogPage) {
     setPages((current) => {
       const exists = current.some((item) => item.id === page.id);
@@ -462,6 +471,11 @@ export default function PriceList() {
       }
       return [...current, product];
     });
+  }
+
+  function importProducts(products: HearingAid[]) {
+    if (products.length === 0) return;
+    setCatalog((current) => [...current, ...products]);
   }
 
   function updateChannels(id: string, channels: string) {
@@ -531,6 +545,13 @@ export default function PriceList() {
         pages={pages}
         onClose={() => setEditorOpen(false)}
         onSave={saveProduct}
+      />
+
+      <CsvImport
+        open={csvImportOpen}
+        page={csvImportPage}
+        onClose={() => setCsvImportOpen(false)}
+        onImport={importProducts}
       />
 
       {pages.length === 0 ? (
@@ -610,7 +631,7 @@ export default function PriceList() {
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center justify-end gap-1.5">
                     <div className="print:hidden flex items-center rounded-full border border-neutral-200 bg-white pr-1">
                       <button
                         type="button"
@@ -647,6 +668,14 @@ export default function PriceList() {
                     </button>
                     <button
                       type="button"
+                      onClick={() => openCsvImport(page)}
+                      className="print:hidden inline-flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1 text-[11px] font-medium text-[#0A1F1B] hover:bg-neutral-50"
+                    >
+                      <Upload className="h-3 w-3" />
+                      Import CSV
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => deletePage(page.id)}
                       className="print:hidden inline-flex items-center rounded-full border border-neutral-200 p-1.5 text-neutral-400 hover:text-[#FF6503]"
                       aria-label={`Delete ${pageLabel} page`}
@@ -665,16 +694,26 @@ export default function PriceList() {
                       No models on this {brand} page yet
                     </p>
                     <p className="mt-1 text-xs text-neutral-500">
-                      Add a model name and it will appear on this page.
+                      Add a model name, or import several from a CSV file.
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => openAdd(page)}
-                      className="mt-4 inline-flex items-center gap-1 rounded-full bg-[#0A1F1B] px-4 py-2 text-[12px] font-semibold text-white"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Add model
-                    </button>
+                    <div className="mt-4 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openAdd(page)}
+                        className="inline-flex items-center gap-1 rounded-full bg-[#0A1F1B] px-4 py-2 text-[12px] font-semibold text-white"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add model
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openCsvImport(page)}
+                        className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-4 py-2 text-[12px] font-medium text-[#0A1F1B] hover:bg-neutral-50"
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                        Import CSV
+                      </button>
+                    </div>
                   </div>
                 ) : (
                 <div className="overflow-hidden rounded-xl border border-neutral-200">
