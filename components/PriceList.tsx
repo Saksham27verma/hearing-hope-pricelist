@@ -36,7 +36,7 @@ import {
   type StoredCatalog,
 } from "@/data/products";
 import CatalogEditor from "@/components/CatalogEditor";
-import { ClosingPage, CoverPage } from "@/components/CatalogPages";
+import { ClosingPage, CoverPage, HearingAidTypesPage } from "@/components/CatalogPages";
 import CsvImport from "@/components/CsvImport";
 import PageEditor from "@/components/PageEditor";
 import {
@@ -326,6 +326,7 @@ export default function PriceList() {
       .print-page { height: 297mm !important; max-height: 297mm !important; overflow: hidden !important; }
       .print-page footer { flex-shrink: 0 !important; break-inside: avoid; page-break-inside: avoid; }
       .print-table-wrap { min-height: 0 !important; overflow: hidden !important; }
+      .print\\:hidden { display: none !important; }
     `,
   });
 
@@ -433,7 +434,7 @@ export default function PriceList() {
       for (const row of rows) {
         const id = row.dataset.productId;
         if (!id) continue;
-        const height = Math.ceil(row.getBoundingClientRect().height) + 3;
+        const height = Math.ceil(row.getBoundingClientRect().height) + 6;
         rowHeightsPx[id] = height;
         heightSum += height;
         heightCount += 1;
@@ -869,6 +870,7 @@ export default function PriceList() {
 
       <div ref={contentRef} className="print-root space-y-8 print:space-y-0">
         <CoverPage brandNames={existingBrands} modelCount={catalog.length} />
+        <HearingAidTypesPage />
         {pageSections.map((section) => {
           const {
             page,

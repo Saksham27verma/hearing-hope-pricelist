@@ -4,7 +4,7 @@ import type { CatalogPage, HearingAid, StoredCatalog } from "@/data/products";
 export const PRINT_BODY_MM = 228;
 
 /** Extra clearance so print/PDF never paints rows over the footer. */
-export const PACKING_SAFETY_MM = 4;
+export const PACKING_SAFETY_MM = 24;
 
 const BASE_ROW_MM = 6.2;
 const DESC_LINE_MM = 3.35;
