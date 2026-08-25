@@ -153,13 +153,23 @@ export async function readCatalog(): Promise<StoredCatalog> {
 export async function writeCatalog(catalog: StoredCatalog): Promise<StoredCatalog> {
   const existing =
     (await readCatalogFromDb()) ?? cachedCatalog ?? emptyCatalog();
-  if (existing.products.length - catalog.products.length >= 10) {
+  if (isUnsafeCatalogShrink(existing, catalog)) {
     return withPagedCatalog(existing);
   }
   const payload = withPagedCatalog(catalog);
-  if (existing.products.length - payload.products.length >= 10) {
+  if (isUnsafeCatalogShrink(existing, payload)) {
     return withPagedCatalog(existing);
   }
   await persistCatalog(payload);
   return payload;
+}
+
+function isUnsafeCatalogShrink(existing: StoredCatalog, incoming: StoredCatalog) {
+  const from = existing.products.length;
+  const to = incoming.products.length;
+  if (to === 0) return true;
+  if (from < 50) return false;
+  if (to < 50) return true;
+  if (from >= 100 && to < from * 0.5) return true;
+  return false;
 }

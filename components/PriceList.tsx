@@ -40,6 +40,7 @@ import { ClosingPage, CoverPage } from "@/components/CatalogPages";
 import CsvImport from "@/components/CsvImport";
 import PageEditor from "@/components/PageEditor";
 import {
+  catalogLayoutChanged,
   layoutPrintSections,
   mergeBrandPages,
   PACKING_SAFETY_MM,
@@ -171,16 +172,19 @@ async function saveServerCatalog(catalog: StoredCatalog): Promise<boolean> {
   }
 }
 
-function richerCatalog(
-  a: StoredCatalog | null,
-  b: StoredCatalog | null,
+function preferWorkingCatalog(
+  local: StoredCatalog | null,
+  server: StoredCatalog | null,
 ): StoredCatalog | null {
-  if (!a) return b;
-  if (!b) return a;
-  if (a.products.length !== b.products.length) {
-    return a.products.length > b.products.length ? a : b;
+  if (!local) return server;
+  if (!server) return local;
+  const localCount = local.products.length;
+  const serverCount = server.products.length;
+  if (localCount >= 50 && localCount >= serverCount * 0.8) return local;
+  if (serverCount !== localCount) {
+    return serverCount > localCount ? server : local;
   }
-  return a.pages.length >= b.pages.length ? a : b;
+  return local.pages.length >= server.pages.length ? local : server;
 }
 
 function ReorderControls({
@@ -350,7 +354,7 @@ export default function PriceList() {
     async function hydrate() {
       const local = readLocalCatalog();
       const server = await fetchServerCatalog();
-      const next = richerCatalog(local, server) ?? {
+      const next = preferWorkingCatalog(local, server) ?? {
         pages: defaultPages,
         products: defaultProducts,
       };
@@ -364,8 +368,9 @@ export default function PriceList() {
       setCatalog(payload.products);
       cacheLocalCatalog(payload);
       if (
-        payload.products.length > (server?.products.length ?? 0) ||
-        payload.pages.length !== (server?.pages.length ?? 0)
+        !server ||
+        payload.products.length !== server.products.length ||
+        catalogLayoutChanged(payload, server)
       ) {
         await saveServerCatalog(payload);
       }
@@ -413,52 +418,37 @@ export default function PriceList() {
 
     function measure(root: HTMLDivElement) {
       const page = root.querySelector("[data-packing-page]");
-      const inner = root.querySelector("[data-packing-inner]");
-      const top = root.querySelector("[data-packing-top]");
-      const head = root.querySelector("[data-packing-head]");
       const notes = root.querySelector("[data-packing-notes]");
-      const footer = root.querySelector("[data-packing-footer]");
-      if (!page || !inner || !top || !head || !notes || !footer) return;
+      const rows = [
+        ...root.querySelectorAll<HTMLTableRowElement>("[data-packing-row]"),
+      ];
+      if (!page || !notes || rows.length === 0) return;
 
       const pageWidth = page.getBoundingClientRect().width;
       if (pageWidth < 40) return;
-      const pxPerMm = pageWidth / 210;
-      const innerStyle = window.getComputedStyle(inner);
-      const padTop = Number.parseFloat(innerStyle.paddingTop) || 0;
-      const padBottom = Number.parseFloat(innerStyle.paddingBottom) || 0;
-      const stripePx = 4;
-      const notesHeight = Math.max(
-        notes.getBoundingClientRect().height,
-        28,
-      );
-      const footerHeight = footer.getBoundingClientRect().height;
-      const bodyPx =
-        297 * pxPerMm -
-        stripePx -
-        padTop -
-        padBottom -
-        top.getBoundingClientRect().height -
-        head.getBoundingClientRect().height -
-        notesHeight -
-        footerHeight -
-        PACKING_SAFETY_MM * pxPerMm;
 
       const rowHeightsPx: Record<string, number> = {};
       let heightSum = 0;
       let heightCount = 0;
-      for (const row of root.querySelectorAll<HTMLTableRowElement>(
-        "[data-packing-row]",
-      )) {
+      for (const row of rows) {
         const id = row.dataset.productId;
         if (!id) continue;
-        const height = Math.ceil(row.getBoundingClientRect().height) + 1;
+        const height = Math.ceil(row.getBoundingClientRect().height) + 3;
         rowHeightsPx[id] = height;
         heightSum += height;
         heightCount += 1;
       }
 
+      const firstRow = rows[0]?.getBoundingClientRect();
+      if (!firstRow) return;
+      const notesTop = notes.getBoundingClientRect().top;
+      const bodyPx = Math.max(
+        80,
+        notesTop - firstRow.top - PACKING_SAFETY_MM * (pageWidth / 210),
+      );
+
       setPackMetrics({
-        bodyPx: Math.max(80, bodyPx),
+        bodyPx,
         rowHeightsPx,
         fallbackRowPx: heightCount > 0 ? heightSum / heightCount : 22,
       });
@@ -736,9 +726,12 @@ export default function PriceList() {
           <div className="h-1 w-full bg-[#18AD8D]" />
           <div
             data-packing-inner
-            className="flex flex-1 flex-col px-5 pt-3 pb-3"
+            className="flex min-h-0 flex-1 flex-col px-5 pt-3 pb-3"
           >
-            <div data-packing-top>
+            <div
+              data-packing-top
+              className="shrink-0"
+            >
               <ClinicHeader compact />
               <BrandWave />
               <div className="mt-1.5 mb-1.5">
@@ -753,36 +746,109 @@ export default function PriceList() {
                 </p>
               </div>
             </div>
-            <table className="w-full table-fixed border-collapse text-[11px]">
-              <thead data-packing-head>
-                <tr className="bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase">
-                  <th className="w-7 py-1 pr-1.5 pl-1 font-semibold">#</th>
-                  <th className="w-[78mm] py-1 pr-1.5 font-semibold">Product</th>
-                  <th className="w-28 py-1 pr-1.5 text-center font-semibold">
-                    Type
-                  </th>
-                  <th className="w-16 py-1 pr-1.5 text-center font-semibold">
-                    Channels/Band
-                  </th>
-                  <th className="w-12 py-1 pr-1.5 text-center font-semibold">
-                    Unit
-                  </th>
-                  <th className="w-16 py-1 pr-1.5 text-center font-semibold">
-                    Warranty (yrs)
-                  </th>
-                  <th className="w-9 py-1 pr-1 text-center font-semibold">
-                    R
-                  </th>
-                  <th className="w-9 py-1 pr-1 text-center font-semibold">
-                    B
-                  </th>
-                  <th className="py-1 pr-1.5 text-right font-semibold">MRP</th>
-                </tr>
-              </thead>
-            </table>
+            <div className="print-table-wrap min-h-0 flex-1 overflow-hidden rounded-lg border border-neutral-200">
+              <table className="w-full table-fixed border-collapse text-[11px]">
+                <thead data-packing-head>
+                  <tr className="bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase">
+                    <th className="w-7 py-1 pr-1.5 pl-1 font-semibold">#</th>
+                    <th className="w-[78mm] py-1 pr-1.5 font-semibold">
+                      Product
+                    </th>
+                    <th className="w-28 py-1 pr-1.5 text-center font-semibold">
+                      Type
+                    </th>
+                    <th className="w-16 py-1 pr-1.5 text-center font-semibold">
+                      Channels/Band
+                    </th>
+                    <th className="w-12 py-1 pr-1.5 text-center font-semibold">
+                      Unit
+                    </th>
+                    <th className="w-16 py-1 pr-1.5 text-center font-semibold">
+                      Warranty (yrs)
+                    </th>
+                    <th className="w-9 py-1 pr-1 text-center font-semibold">
+                      R
+                    </th>
+                    <th className="w-9 py-1 pr-1 text-center font-semibold">
+                      B
+                    </th>
+                    <th className="py-1 pr-1.5 text-right font-semibold">
+                      MRP
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {catalog.map((product) => (
+                    <tr
+                      key={product.id}
+                      data-packing-row
+                      data-product-id={product.id}
+                    >
+                      <td className="py-0.5 pr-1.5 pl-1 align-top text-[10px] font-medium text-neutral-400">
+                        01
+                      </td>
+                      <td className="py-0.5 pr-1.5 align-top">
+                        <p className="font-semibold leading-tight break-words text-[#0A1F1B]">
+                          {product.name}
+                        </p>
+                        {product.description.trim() ? (
+                          <p className="mt-0.5 text-[9px] leading-snug font-normal break-words text-neutral-500">
+                            {product.description.trim()}
+                          </p>
+                        ) : null}
+                      </td>
+                      <td className="py-0.5 pr-1.5 align-top">
+                        <div className="flex flex-wrap justify-center gap-px">
+                          {product.deviceTypes.map((type) => (
+                            <span
+                              key={type}
+                              className="inline-flex min-w-[1.65rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1 py-px text-[7px] font-semibold tracking-[0.06em] text-[#0A1F1B]"
+                            >
+                              {type}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="py-0.5 pr-1.5 text-center">
+                        <span className="tabular-nums font-semibold">
+                          {product.channels.trim() || "—"}
+                        </span>
+                      </td>
+                      <td className="py-0.5 pr-1.5 text-center">
+                        <span className="inline-flex rounded-full bg-neutral-100 px-1.5 py-px text-[9px] font-medium text-neutral-600">
+                          {product.unit}
+                        </span>
+                      </td>
+                      <td className="py-0.5 pr-1.5 text-center tabular-nums font-semibold">
+                        {product.warrantyYears}
+                      </td>
+                      <td className="py-0.5 pr-1 text-center">
+                        <FeatureMark
+                          active={product.isRechargeable}
+                          label="Rechargeable"
+                          Icon={BatteryCharging}
+                          tone="teal"
+                        />
+                      </td>
+                      <td className="py-0.5 pr-1 text-center">
+                        <FeatureMark
+                          active={product.hasBluetooth}
+                          label="Bluetooth"
+                          Icon={Bluetooth}
+                          tone="orange"
+                        />
+                      </td>
+                      <td className="py-0.5 pr-1.5 text-right text-[12px] font-semibold tabular-nums text-[#FF6503]">
+                        {formatInr(product.mrp)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div
               data-packing-notes
-              className="mt-1 space-y-0 text-[8px] leading-tight text-neutral-400"
+              className="mt-1 shrink-0 space-y-0 text-[8px] leading-tight text-neutral-400"
             >
               <p>
                 BTE Behind the Ear · RIC Receiver in Canal · CIC Completely in
@@ -794,91 +860,11 @@ export default function PriceList() {
                 connectivity
               </p>
             </div>
-            <div data-packing-footer>
+            <div data-packing-footer className="shrink-0">
               <PageFooter brand="Brand" />
             </div>
           </div>
         </div>
-        <table className="w-[210mm] table-fixed border-collapse text-[11px]">
-          <colgroup>
-            <col className="w-7" />
-            <col className="w-[78mm]" />
-            <col className="w-28" />
-            <col className="w-16" />
-            <col className="w-12" />
-            <col className="w-16" />
-            <col className="w-9" />
-            <col className="w-9" />
-            <col />
-          </colgroup>
-          <tbody>
-            {catalog.map((product) => (
-              <tr
-                key={product.id}
-                data-packing-row
-                data-product-id={product.id}
-              >
-                <td className="py-0.5 pr-1.5 pl-1 align-top text-[10px] font-medium text-neutral-400">
-                  01
-                </td>
-                <td className="py-0.5 pr-1.5 align-top">
-                  <p className="font-semibold leading-tight break-words text-[#0A1F1B]">
-                    {product.name}
-                  </p>
-                  {product.description.trim() ? (
-                    <p className="mt-0.5 text-[9px] leading-snug font-normal break-words text-neutral-500">
-                      {product.description.trim()}
-                    </p>
-                  ) : null}
-                </td>
-                <td className="py-0.5 pr-1.5 align-top">
-                  <div className="flex flex-wrap justify-center gap-px">
-                    {product.deviceTypes.map((type) => (
-                      <span
-                        key={type}
-                        className="inline-flex min-w-[1.65rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1 py-px text-[7px] font-semibold tracking-[0.06em] text-[#0A1F1B]"
-                      >
-                        {type}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td className="py-0.5 pr-1.5 text-center">
-                  <span className="tabular-nums font-semibold">
-                    {product.channels.trim() || "—"}
-                  </span>
-                </td>
-                <td className="py-0.5 pr-1.5 text-center">
-                  <span className="inline-flex rounded-full bg-neutral-100 px-1.5 py-px text-[9px] font-medium text-neutral-600">
-                    {product.unit}
-                  </span>
-                </td>
-                <td className="py-0.5 pr-1.5 text-center tabular-nums font-semibold">
-                  {product.warrantyYears}
-                </td>
-                <td className="py-0.5 pr-1 text-center">
-                  <FeatureMark
-                    active={product.isRechargeable}
-                    label="Rechargeable"
-                    Icon={BatteryCharging}
-                    tone="teal"
-                  />
-                </td>
-                <td className="py-0.5 pr-1 text-center">
-                  <FeatureMark
-                    active={product.hasBluetooth}
-                    label="Bluetooth"
-                    Icon={Bluetooth}
-                    tone="orange"
-                  />
-                </td>
-                <td className="py-0.5 pr-1.5 text-right text-[12px] font-semibold tabular-nums text-[#FF6503]">
-                  {formatInr(product.mrp)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
 
       <div ref={contentRef} className="print-root space-y-8 print:space-y-0">
@@ -1235,7 +1221,10 @@ export default function PriceList() {
                 </div>
                 )}
 
-                <div className="mt-1 shrink-0 space-y-0 text-[8px] leading-tight text-neutral-400">
+                <div
+                  data-print-notes
+                  className="mt-1 shrink-0 space-y-0 text-[8px] leading-tight text-neutral-400"
+                >
                   <p>
                     {typesOnPage
                       .map((type) => `${type} ${DEVICE_TYPE_LABELS[type]}`)

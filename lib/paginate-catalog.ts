@@ -4,7 +4,7 @@ import type { CatalogPage, HearingAid, StoredCatalog } from "@/data/products";
 export const PRINT_BODY_MM = 228;
 
 /** Extra clearance so print/PDF never paints rows over the footer. */
-export const PACKING_SAFETY_MM = 10;
+export const PACKING_SAFETY_MM = 4;
 
 const BASE_ROW_MM = 6.2;
 const DESC_LINE_MM = 3.35;
@@ -130,7 +130,7 @@ function packProducts(
 
   for (const item of items) {
     const height = Math.max(1, measure(item));
-    const wouldOverflow = current.length > 0 && used + height > limit;
+    const wouldOverflow = current.length > 0 && used + height >= limit;
     if (wouldOverflow) {
       packed.push(current);
       current = [item];
