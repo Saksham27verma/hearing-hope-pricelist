@@ -1,27 +1,28 @@
 import type { CatalogPage, HearingAid, StoredCatalog } from "@/data/products";
 
-/** Compact A4 density: header, 32 rows, notes, and footer stay on one page. */
-export const MODELS_PER_PAGE = 32;
+/** Fallback usable table-body height when row metrics are not measured yet. */
+export const PRINT_BODY_MM = 248;
 
-function chunkItems<T>(items: T[], size: number): T[][] {
-  if (items.length === 0) return [[]];
-  const chunks: T[][] = [];
-  for (let index = 0; index < items.length; index += size) {
-    chunks.push(items.slice(index, index + size));
-  }
-  return chunks;
-}
+const BASE_ROW_MM = 6.2;
+const DESC_LINE_MM = 3.35;
+const DESC_CHARS_PER_LINE = 52;
 
-function unusedPageId(baseId: string, usedIds: Set<string>) {
-  let suffix = 2;
-  let id = `${baseId}-p${suffix}`;
-  while (usedIds.has(id)) {
-    suffix += 1;
-    id = `${baseId}-p${suffix}`;
-  }
-  usedIds.add(id);
-  return id;
-}
+export type PackingMetrics = {
+  bodyPx: number;
+  rowHeightsPx: Record<string, number>;
+  fallbackRowPx: number;
+};
+
+export type PackedPage = {
+  brand: string;
+  page: CatalogPage;
+  items: HearingAid[];
+  pageNumber: number;
+  pageCount: number;
+  brandIndex: number;
+  brandCount: number;
+  brandOffset: number;
+};
 
 export function catalogLayoutChanged(a: StoredCatalog, b: StoredCatalog) {
   if (a.pages.length !== b.pages.length) return true;
@@ -41,75 +42,69 @@ export function catalogLayoutChanged(a: StoredCatalog, b: StoredCatalog) {
   );
 }
 
-export function paginateCatalog(catalog: StoredCatalog): StoredCatalog {
-  const productsByPage = new Map<string, HearingAid[]>();
-  for (const product of catalog.products) {
-    const list = productsByPage.get(product.pageId) ?? [];
+export function estimateRowMm(product: HearingAid) {
+  const description = product.description.trim();
+  const descLines = description
+    ? Math.max(1, Math.ceil(description.length / DESC_CHARS_PER_LINE))
+    : 0;
+  return BASE_ROW_MM + descLines * DESC_LINE_MM;
+}
+
+function productsByPageId(products: HearingAid[]) {
+  const grouped = new Map<string, HearingAid[]>();
+  for (const product of products) {
+    const list = grouped.get(product.pageId) ?? [];
     list.push(product);
-    productsByPage.set(product.pageId, list);
+    grouped.set(product.pageId, list);
   }
+  return grouped;
+}
 
+/** Keep one stored page per brand so brand order is a single list. */
+export function mergeBrandPages(catalog: StoredCatalog): StoredCatalog {
+  const grouped = productsByPageId(catalog.products);
   const brandOrder: string[] = [];
-  const pagesByBrand = new Map<string, CatalogPage[]>();
+  const firstPageByBrand = new Map<string, CatalogPage>();
+  const brandProducts = new Map<string, HearingAid[]>();
+
   for (const page of catalog.pages) {
-    if (!pagesByBrand.has(page.brand)) {
+    if (!firstPageByBrand.has(page.brand)) {
       brandOrder.push(page.brand);
-      pagesByBrand.set(page.brand, []);
+      firstPageByBrand.set(page.brand, page);
+      brandProducts.set(page.brand, []);
     }
-    pagesByBrand.get(page.brand)!.push(page);
+    brandProducts.get(page.brand)!.push(...(grouped.get(page.id) ?? []));
+    grouped.delete(page.id);
   }
 
-  const usedIds = new Set<string>(catalog.pages.map((page) => page.id));
+  for (const items of grouped.values()) {
+    if (items.length === 0) continue;
+    const brand = items[0]?.brand ?? "Unknown";
+    if (!firstPageByBrand.has(brand)) {
+      brandOrder.push(brand);
+      firstPageByBrand.set(brand, {
+        id: items[0].pageId,
+        brand,
+      });
+      brandProducts.set(brand, []);
+    }
+    brandProducts.get(brand)!.push(...items);
+  }
+
   const pages: CatalogPage[] = [];
   const products: HearingAid[] = [];
 
   for (const brand of brandOrder) {
-    const brandPages = pagesByBrand.get(brand) ?? [];
-    const brandProducts: HearingAid[] = [];
-    for (const page of brandPages) {
-      brandProducts.push(...(productsByPage.get(page.id) ?? []));
-      productsByPage.delete(page.id);
-    }
-
-    const chunks = chunkItems(brandProducts, MODELS_PER_PAGE);
-    const baseId = brandPages[0]?.id ?? `page-${brand.toLowerCase()}`;
-    chunks.forEach((chunk, index) => {
-      const nextPage = brandPages[index] ?? {
-        id: unusedPageId(baseId, usedIds),
+    const page = firstPageByBrand.get(brand);
+    if (!page) continue;
+    pages.push(page);
+    products.push(
+      ...(brandProducts.get(brand) ?? []).map((item) => ({
+        ...item,
+        pageId: page.id,
         brand,
-      };
-      usedIds.add(nextPage.id);
-      pages.push(nextPage);
-      products.push(
-        ...chunk.map((item) => ({
-          ...item,
-          pageId: nextPage.id,
-          brand,
-        })),
-      );
-    });
-  }
-
-  for (const [pageId, items] of productsByPage) {
-    const brand = items[0]?.brand ?? "Unknown";
-    const chunks = chunkItems(items, MODELS_PER_PAGE);
-    chunks.forEach((chunk, index) => {
-      const nextPage =
-        index === 0
-          ? { id: pageId, brand }
-          : { id: unusedPageId(pageId, usedIds), brand };
-      usedIds.add(nextPage.id);
-      if (!pages.some((page) => page.id === nextPage.id)) {
-        pages.push(nextPage);
-      }
-      products.push(
-        ...chunk.map((item) => ({
-          ...item,
-          pageId: nextPage.id,
-          brand,
-        })),
-      );
-    });
+      })),
+    );
   }
 
   if (products.length !== catalog.products.length) {
@@ -117,4 +112,110 @@ export function paginateCatalog(catalog: StoredCatalog): StoredCatalog {
   }
 
   return { pages, products };
+}
+
+function packProducts(
+  items: HearingAid[],
+  measure: (item: HearingAid) => number,
+  limit: number,
+) {
+  if (items.length === 0) return [[] as HearingAid[]];
+
+  const packed: HearingAid[][] = [];
+  let current: HearingAid[] = [];
+  let used = 0;
+
+  for (const item of items) {
+    const height = Math.max(1, measure(item));
+    const wouldOverflow = current.length > 0 && used + height > limit;
+    if (wouldOverflow) {
+      packed.push(current);
+      current = [item];
+      used = height;
+      continue;
+    }
+    current.push(item);
+    used += height;
+  }
+
+  if (current.length > 0) packed.push(current);
+  return packed;
+}
+
+export function layoutPrintSections(
+  pages: CatalogPage[],
+  products: HearingAid[],
+  metrics?: PackingMetrics | null,
+): PackedPage[] {
+  const grouped = productsByPageId(products);
+  const brandOrder = Array.from(new Set(pages.map((page) => page.brand)));
+  const sections: PackedPage[] = [];
+  const useMeasured = Boolean(metrics && metrics.bodyPx > 40);
+  const measure = useMeasured
+    ? (item: HearingAid) =>
+        metrics!.rowHeightsPx[item.id] ?? metrics!.fallbackRowPx
+    : estimateRowMm;
+  const limit = useMeasured ? metrics!.bodyPx : PRINT_BODY_MM;
+
+  brandOrder.forEach((brand, brandIndex) => {
+    const brandPages = pages.filter((page) => page.brand === brand);
+    const brandItems = brandPages.flatMap((page) => grouped.get(page.id) ?? []);
+    const chunks = packProducts(brandItems, measure, limit);
+    const pageCount = chunks.length;
+    let brandOffset = 0;
+
+    chunks.forEach((items, index) => {
+      sections.push({
+        brand,
+        page: brandPages[0] ?? { id: `page-${brand}`, brand },
+        items,
+        pageNumber: index + 1,
+        pageCount,
+        brandIndex,
+        brandCount: brandOrder.length,
+        brandOffset,
+      });
+      brandOffset += items.length;
+    });
+  });
+
+  return sections;
+}
+
+export function reorderBrandList(
+  pages: CatalogPage[],
+  from: number,
+  to: number,
+): CatalogPage[] {
+  const brands = Array.from(new Set(pages.map((page) => page.brand)));
+  if (from === to || from < 0 || to < 0 || to >= brands.length) return pages;
+  const nextBrands = [...brands];
+  const [brand] = nextBrands.splice(from, 1);
+  nextBrands.splice(to, 0, brand);
+  const byBrand = new Map<string, CatalogPage[]>();
+  for (const page of pages) {
+    const list = byBrand.get(page.brand) ?? [];
+    list.push(page);
+    byBrand.set(page.brand, list);
+  }
+  return nextBrands.flatMap((name) => byBrand.get(name) ?? []);
+}
+
+export function reorderBrandProducts(
+  items: HearingAid[],
+  brand: string,
+  from: number,
+  to: number,
+): HearingAid[] {
+  const brandItems = items.filter((item) => item.brand === brand);
+  if (from === to || from < 0 || to < 0 || to >= brandItems.length) {
+    return items;
+  }
+  const next = [...brandItems];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  let index = 0;
+  return items.map((product) =>
+    product.brand === brand ? next[index++] : product,
+  );
 }

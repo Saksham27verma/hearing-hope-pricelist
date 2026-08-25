@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+} from "react";
 import { useReactToPrint } from "react-to-print";
 import {
   BatteryCharging,
@@ -21,7 +28,6 @@ import {
   DEVICE_TYPE_LABELS,
   DEVICE_TYPE_ORDER,
   defaultPages,
-  labelForPage,
   normalizeWarrantyYears,
   products as defaultProducts,
   type CatalogPage,
@@ -33,7 +39,13 @@ import CatalogEditor from "@/components/CatalogEditor";
 import { ClosingPage, CoverPage } from "@/components/CatalogPages";
 import CsvImport from "@/components/CsvImport";
 import PageEditor from "@/components/PageEditor";
-import { MODELS_PER_PAGE, paginateCatalog } from "@/lib/paginate-catalog";
+import {
+  layoutPrintSections,
+  mergeBrandPages,
+  reorderBrandList,
+  reorderBrandProducts,
+  type PackingMetrics,
+} from "@/lib/paginate-catalog";
 
 const STORAGE_KEY = "hearing-hope-catalog-v3";
 const LEGACY_STORAGE_KEY = "hearing-hope-catalog-v2";
@@ -67,16 +79,6 @@ function normalizeCatalog(items: HearingAid[]): HearingAid[] {
   });
 }
 
-function groupProductsByPage(
-  pages: CatalogPage[],
-  items: HearingAid[],
-): { page: CatalogPage; items: HearingAid[] }[] {
-  return pages.map((page) => ({
-    page,
-    items: items.filter((item) => item.pageId === page.id),
-  }));
-}
-
 function pagesFromProducts(items: HearingAid[]): CatalogPage[] {
   const pages: CatalogPage[] = [];
   const seen = new Map<string, string>();
@@ -97,28 +99,6 @@ function formatInr(value: number) {
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(value);
-}
-
-function moveItem<T>(list: T[], from: number, to: number): T[] {
-  if (from === to || from < 0 || to < 0 || to >= list.length) return list;
-  const next = [...list];
-  const [item] = next.splice(from, 1);
-  next.splice(to, 0, item);
-  return next;
-}
-
-function reorderPageProducts(
-  items: HearingAid[],
-  pageId: string,
-  from: number,
-  to: number,
-): HearingAid[] {
-  const pageItems = items.filter((item) => item.pageId === pageId);
-  const reordered = moveItem(pageItems, from, to);
-  let index = 0;
-  return items.map((item) =>
-    item.pageId === pageId ? reordered[index++] : item,
-  );
 }
 
 function parseStoredCatalog(raw: string | null): StoredCatalog | null {
@@ -351,11 +331,13 @@ export default function PriceList() {
   const [editingPage, setEditingPage] = useState<CatalogPage | null>(null);
   const [csvImportOpen, setCsvImportOpen] = useState(false);
   const [csvImportPage, setCsvImportPage] = useState<CatalogPage | null>(null);
-  const [draggingPage, setDraggingPage] = useState<number | null>(null);
+  const [draggingBrand, setDraggingBrand] = useState<string | null>(null);
   const [draggingModel, setDraggingModel] = useState<{
-    pageId: string;
+    brand: string;
     index: number;
   } | null>(null);
+  const [packMetrics, setPackMetrics] = useState<PackingMetrics | null>(null);
+  const packingProbeRef = useRef<HTMLDivElement>(null);
   const skipNextSave = useRef(true);
 
   useEffect(() => {
@@ -370,9 +352,9 @@ export default function PriceList() {
       };
       if (cancelled) return;
 
-      const paginated = paginateCatalog(next);
+      const merged = mergeBrandPages(next);
       const payload =
-        paginated.products.length === next.products.length ? paginated : next;
+        merged.products.length === next.products.length ? merged : next;
 
       setPages(payload.pages);
       setCatalog(payload.products);
@@ -406,13 +388,86 @@ export default function PriceList() {
     return () => window.clearTimeout(timer);
   }, [pages, catalog, hydrated]);
 
-  const pageSections = useMemo(
-    () => groupProductsByPage(pages, catalog),
-    [pages, catalog],
-  );
   const existingBrands = useMemo(
     () => Array.from(new Set(pages.map((page) => page.brand))),
     [pages],
+  );
+  const packingSignature = useMemo(
+    () =>
+      catalog
+        .map(
+          (item) =>
+            `${item.id}\t${item.name}\t${item.description}\t${item.deviceTypes.join(",")}`,
+        )
+        .join("\n"),
+    [catalog],
+  );
+
+  useLayoutEffect(() => {
+    const root = packingProbeRef.current;
+    if (!root || catalog.length === 0) return;
+
+    function measure() {
+      const page = root.querySelector("[data-packing-page]");
+      const inner = root.querySelector("[data-packing-inner]");
+      const top = root.querySelector("[data-packing-top]");
+      const head = root.querySelector("[data-packing-head]");
+      const notes = root.querySelector("[data-packing-notes]");
+      const footer = root.querySelector("[data-packing-footer]");
+      if (!page || !inner || !top || !head || !notes || !footer) return;
+
+      const pageWidth = page.getBoundingClientRect().width;
+      if (pageWidth < 40) return;
+      const pxPerMm = pageWidth / 210;
+      const innerStyle = window.getComputedStyle(inner);
+      const padTop = Number.parseFloat(innerStyle.paddingTop) || 0;
+      const padBottom = Number.parseFloat(innerStyle.paddingBottom) || 0;
+      const stripePx = 4;
+      const bodyPx =
+        297 * pxPerMm -
+        stripePx -
+        padTop -
+        padBottom -
+        top.getBoundingClientRect().height -
+        head.getBoundingClientRect().height -
+        notes.getBoundingClientRect().height -
+        footer.getBoundingClientRect().height -
+        3;
+
+      const rowHeightsPx: Record<string, number> = {};
+      let heightSum = 0;
+      let heightCount = 0;
+      for (const row of root.querySelectorAll<HTMLTableRowElement>(
+        "[data-packing-row]",
+      )) {
+        const id = row.dataset.productId;
+        if (!id) continue;
+        const height = row.getBoundingClientRect().height;
+        rowHeightsPx[id] = height;
+        heightSum += height;
+        heightCount += 1;
+      }
+
+      setPackMetrics({
+        bodyPx: Math.max(80, bodyPx),
+        rowHeightsPx,
+        fallbackRowPx: heightCount > 0 ? heightSum / heightCount : 22,
+      });
+    }
+
+    measure();
+    let cancelled = false;
+    void document.fonts.ready.then(() => {
+      if (!cancelled) measure();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [catalog.length, packingSignature]);
+
+  const pageSections = useMemo(
+    () => layoutPrintSections(pages, catalog, packMetrics),
+    [pages, catalog, packMetrics],
   );
 
   function openAdd(page?: CatalogPage) {
@@ -447,9 +502,9 @@ export default function PriceList() {
   }
 
   function commitCatalog(next: StoredCatalog) {
-    const paginated = paginateCatalog(next);
+    const merged = mergeBrandPages(next);
     const payload =
-      paginated.products.length === next.products.length ? paginated : next;
+      merged.products.length === next.products.length ? merged : next;
     setPages(payload.pages);
     setCatalog(payload.products);
   }
@@ -467,9 +522,12 @@ export default function PriceList() {
   }
 
   function deletePage(id: string) {
+    const page = pages.find((item) => item.id === id);
     commitCatalog({
-      pages: pages.filter((page) => page.id !== id),
-      products: catalog.filter((item) => item.pageId !== id),
+      pages: pages.filter((item) => item.id !== id && item.brand !== page?.brand),
+      products: catalog.filter(
+        (item) => item.pageId !== id && item.brand !== page?.brand,
+      ),
     });
   }
 
@@ -507,25 +565,25 @@ export default function PriceList() {
     });
   }
 
-  function movePage(from: number, to: number) {
+  function moveBrand(from: number, to: number) {
     commitCatalog({
-      pages: moveItem(pages, from, to),
+      pages: reorderBrandList(pages, from, to),
       products: catalog,
     });
   }
 
-  function moveModel(pageId: string, from: number, to: number) {
+  function moveModel(brand: string, from: number, to: number) {
     commitCatalog({
       pages,
-      products: reorderPageProducts(catalog, pageId, from, to),
+      products: reorderBrandProducts(catalog, brand, from, to),
     });
   }
 
   return (
-    <div className="min-h-screen bg-[#e8eeec] py-10 print:bg-white print:py-0">
+    <div className="min-h-screen bg-[#e8eeec] py-10 pt-20 print:bg-white print:py-0">
       <div className="print:hidden fixed top-6 right-6 z-50 flex items-center gap-2">
         <div className="rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-[#0A1F1B] shadow-lg ring-1 ring-black/5">
-          {catalog.length} models · {MODELS_PER_PAGE}/page
+          {catalog.length} models
         </div>
         <button
           type="button"
@@ -577,6 +635,69 @@ export default function PriceList() {
         onImport={importProducts}
       />
 
+      {existingBrands.length > 1 ? (
+        <div className="print:hidden mx-auto mb-6 w-[210mm] max-w-full rounded-2xl bg-white p-4 shadow-lg ring-1 ring-black/5">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-[#FF6503] uppercase">
+                Brand page order
+              </p>
+              <p className="mt-0.5 text-[12px] text-neutral-500">
+                Drag a brand, or use the arrows, to change the order of brand
+                pages in the catalog and PDF.
+              </p>
+            </div>
+            <p className="text-[11px] font-medium text-neutral-400">
+              {existingBrands.length} brands
+            </p>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {existingBrands.map((brand, brandIndex) => (
+              <div
+                key={brand}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  if (!draggingBrand) return;
+                  moveBrand(
+                    existingBrands.indexOf(draggingBrand),
+                    brandIndex,
+                  );
+                  setDraggingBrand(null);
+                }}
+                className={`flex items-center rounded-full border bg-white pr-1 ${
+                  draggingBrand === brand
+                    ? "border-[#18AD8D] ring-2 ring-[#18AD8D]/30"
+                    : "border-neutral-200"
+                }`}
+              >
+                <button
+                  type="button"
+                  draggable
+                  onDragStart={() => setDraggingBrand(brand)}
+                  onDragEnd={() => setDraggingBrand(null)}
+                  className="cursor-grab px-1.5 py-1 text-neutral-400 hover:text-[#0A1F1B]"
+                  aria-label={`Drag ${brand} brand`}
+                >
+                  <GripVertical className="h-3.5 w-3.5" />
+                </button>
+                <span className="pr-1 text-[12px] font-semibold text-[#0A1F1B]">
+                  {brand}
+                </span>
+                <ReorderControls
+                  label={`${brand} brand`}
+                  index={brandIndex}
+                  total={existingBrands.length}
+                  onMove={moveBrand}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {pages.length === 0 ? (
         <div className="print:hidden mx-auto max-w-[210mm] rounded-2xl bg-white p-10 text-center shadow-lg">
           <p className="text-lg font-semibold text-[#0A1F1B]">No brand pages yet</p>
@@ -594,35 +715,198 @@ export default function PriceList() {
         </div>
       ) : null}
 
+      <div
+        ref={packingProbeRef}
+        aria-hidden="true"
+        className="print:hidden pointer-events-none absolute top-0 left-[-9999px] -z-10 w-[210mm] opacity-0"
+      >
+        <div
+          data-packing-page
+          className="flex h-[297mm] w-[210mm] flex-col bg-white"
+        >
+          <div className="h-1 w-full bg-[#18AD8D]" />
+          <div
+            data-packing-inner
+            className="flex flex-1 flex-col px-5 pt-3 pb-3"
+          >
+            <div data-packing-top>
+              <ClinicHeader compact />
+              <BrandWave />
+              <div className="mt-1.5 mb-1.5">
+                <p className="text-[8px] font-semibold tracking-[0.22em] text-[#FF6503] uppercase">
+                  Manufacturer
+                </p>
+                <p className="mt-1 text-[18px] leading-none font-semibold">
+                  Brand
+                </p>
+                <p className="mt-0.5 text-[9px] font-medium text-neutral-400">
+                  Brand · page 1 of 2
+                </p>
+              </div>
+            </div>
+            <table className="w-full table-fixed border-collapse text-[11px]">
+              <thead data-packing-head>
+                <tr className="bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase">
+                  <th className="w-7 py-1 pr-1.5 pl-1 font-semibold">#</th>
+                  <th className="w-[78mm] py-1 pr-1.5 font-semibold">Product</th>
+                  <th className="w-28 py-1 pr-1.5 text-center font-semibold">
+                    Type
+                  </th>
+                  <th className="w-16 py-1 pr-1.5 text-center font-semibold">
+                    Channels/Band
+                  </th>
+                  <th className="w-12 py-1 pr-1.5 text-center font-semibold">
+                    Unit
+                  </th>
+                  <th className="w-16 py-1 pr-1.5 text-center font-semibold">
+                    Warranty (yrs)
+                  </th>
+                  <th className="w-9 py-1 pr-1 text-center font-semibold">
+                    R
+                  </th>
+                  <th className="w-9 py-1 pr-1 text-center font-semibold">
+                    B
+                  </th>
+                  <th className="py-1 pr-1.5 text-right font-semibold">MRP</th>
+                </tr>
+              </thead>
+            </table>
+            <div
+              data-packing-notes
+              className="mt-1 space-y-0 text-[8px] leading-tight text-neutral-400"
+            >
+              <p>RIC Receiver in Canal · CIC Completely in Canal</p>
+              <p>
+                Teal badge = rechargeable · Orange badge = Bluetooth
+                connectivity
+              </p>
+            </div>
+            <div data-packing-footer>
+              <PageFooter brand="Brand" />
+            </div>
+          </div>
+        </div>
+        <table className="w-[210mm] table-fixed border-collapse text-[11px]">
+          <colgroup>
+            <col className="w-7" />
+            <col className="w-[78mm]" />
+            <col className="w-28" />
+            <col className="w-16" />
+            <col className="w-12" />
+            <col className="w-16" />
+            <col className="w-9" />
+            <col className="w-9" />
+            <col />
+          </colgroup>
+          <tbody>
+            {catalog.map((product) => (
+              <tr
+                key={product.id}
+                data-packing-row
+                data-product-id={product.id}
+              >
+                <td className="py-0.5 pr-1.5 pl-1 align-top text-[10px] font-medium text-neutral-400">
+                  01
+                </td>
+                <td className="py-0.5 pr-1.5 align-top">
+                  <p className="font-semibold leading-tight break-words text-[#0A1F1B]">
+                    {product.name}
+                  </p>
+                  {product.description.trim() ? (
+                    <p className="mt-0.5 text-[9px] leading-snug font-normal break-words text-neutral-500">
+                      {product.description.trim()}
+                    </p>
+                  ) : null}
+                </td>
+                <td className="py-0.5 pr-1.5 align-top">
+                  <div className="flex flex-wrap justify-center gap-px">
+                    {product.deviceTypes.map((type) => (
+                      <span
+                        key={type}
+                        className="inline-flex min-w-[1.65rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1 py-px text-[7px] font-semibold tracking-[0.06em] text-[#0A1F1B]"
+                      >
+                        {type}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="py-0.5 pr-1.5 text-center">
+                  <span className="tabular-nums font-semibold">
+                    {product.channels.trim() || "—"}
+                  </span>
+                </td>
+                <td className="py-0.5 pr-1.5 text-center">
+                  <span className="inline-flex rounded-full bg-neutral-100 px-1.5 py-px text-[9px] font-medium text-neutral-600">
+                    {product.unit}
+                  </span>
+                </td>
+                <td className="py-0.5 pr-1.5 text-center tabular-nums font-semibold">
+                  {product.warrantyYears}
+                </td>
+                <td className="py-0.5 pr-1 text-center">
+                  <FeatureMark
+                    active={product.isRechargeable}
+                    label="Rechargeable"
+                    Icon={BatteryCharging}
+                    tone="teal"
+                  />
+                </td>
+                <td className="py-0.5 pr-1 text-center">
+                  <FeatureMark
+                    active={product.hasBluetooth}
+                    label="Bluetooth"
+                    Icon={Bluetooth}
+                    tone="orange"
+                  />
+                </td>
+                <td className="py-0.5 pr-1.5 text-right text-[12px] font-semibold tabular-nums text-[#FF6503]">
+                  {formatInr(product.mrp)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <div ref={contentRef} className="print-root space-y-8 print:space-y-0">
         <CoverPage brandNames={existingBrands} modelCount={catalog.length} />
-        {pageSections.map(({ page, items }, pageIndex) => {
+        {pageSections.map((section) => {
+          const {
+            page,
+            items,
+            brand,
+            pageNumber,
+            pageCount,
+            brandIndex,
+            brandCount,
+            brandOffset,
+          } = section;
           const typesOnPage = DEVICE_TYPE_ORDER.filter((type) =>
             items.some((item) => item.deviceTypes.includes(type)),
           );
-          const brand = page.brand;
-          const pageLabel = labelForPage(page, pages);
-          const brandOffset = pageSections
-            .slice(0, pageIndex)
-            .filter((section) => section.page.brand === brand)
-            .reduce((sum, section) => sum + section.items.length, 0);
+          const pageLabel =
+            pageCount > 1 ? `${brand} · page ${pageNumber} of ${pageCount}` : brand;
+          const isFirstBrandPage = pageNumber === 1;
+          const brandItemCount = catalog.filter(
+            (item) => item.brand === brand,
+          ).length;
 
           return (
             <section
-              key={page.id}
+              key={`${page.id}-${pageNumber}`}
               onDragOver={(event) => {
-                if (draggingPage === null) return;
+                if (!draggingBrand) return;
                 event.preventDefault();
               }}
               onDrop={(event) => {
                 event.preventDefault();
-                if (draggingPage === null) return;
-                movePage(draggingPage, pageIndex);
-                setDraggingPage(null);
+                if (!draggingBrand) return;
+                moveBrand(existingBrands.indexOf(draggingBrand), brandIndex);
+                setDraggingBrand(null);
               }}
-              className={`print-page mx-auto flex h-auto min-h-[297mm] w-full max-w-[210mm] flex-col overflow-hidden bg-white shadow-[0_18px_50px_rgba(10,31,27,0.12)] print:h-[297mm] print:max-h-[297mm] print:max-w-none print:shadow-none print:break-before-page ${
+              className={`print-page mx-auto flex h-auto min-h-[297mm] w-[210mm] max-w-[210mm] flex-col overflow-hidden bg-white shadow-[0_18px_50px_rgba(10,31,27,0.12)] print:h-[297mm] print:max-h-[297mm] print:max-w-none print:shadow-none print:break-before-page ${
                 items.length === 0 ? "print:hidden" : ""
-              } ${draggingPage === pageIndex ? "ring-2 ring-[#18AD8D]/40" : ""}`}
+              } ${draggingBrand === brand ? "ring-2 ring-[#18AD8D]/40" : ""}`}
             >
               <div className="flex h-1 w-full">
                 <div className="h-full flex-[3] bg-[#18AD8D]" />
@@ -659,28 +943,28 @@ export default function PriceList() {
                     ) : null}
                   </div>
                   <div className="print:hidden flex flex-wrap items-center justify-end gap-1.5">
-                    <div className="print:hidden flex items-center rounded-full border border-neutral-200 bg-white pr-1">
+                    <div className="flex items-center rounded-full border border-neutral-200 bg-white pr-1">
                       <button
                         type="button"
                         draggable
-                        onDragStart={() => setDraggingPage(pageIndex)}
-                        onDragEnd={() => setDraggingPage(null)}
+                        onDragStart={() => setDraggingBrand(brand)}
+                        onDragEnd={() => setDraggingBrand(null)}
                         className="cursor-grab px-1.5 py-1 text-neutral-400 hover:text-[#0A1F1B]"
-                        aria-label={`Drag ${pageLabel} page`}
+                        aria-label={`Drag ${brand} brand`}
                       >
                         <GripVertical className="h-3.5 w-3.5" />
                       </button>
                       <ReorderControls
-                        label={`${pageLabel} page`}
-                        index={pageIndex}
-                        total={pageSections.length}
-                        onMove={movePage}
+                        label={`${brand} brand`}
+                        index={brandIndex}
+                        total={brandCount}
+                        onMove={moveBrand}
                       />
                     </div>
                     <button
                       type="button"
                       onClick={() => openEditPage(page)}
-                      className="print:hidden inline-flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1 text-[11px] font-medium text-[#0A1F1B] hover:bg-neutral-50"
+                      className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1 text-[11px] font-medium text-[#0A1F1B] hover:bg-neutral-50"
                     >
                       <Pencil className="h-3 w-3" />
                       Brand
@@ -688,7 +972,7 @@ export default function PriceList() {
                     <button
                       type="button"
                       onClick={() => openAdd(page)}
-                      className="print:hidden inline-flex items-center gap-1 rounded-full border border-[#18AD8D]/30 px-3 py-1 text-[11px] font-medium text-[#0A1F1B] hover:bg-[#18AD8D]/8"
+                      className="inline-flex items-center gap-1 rounded-full border border-[#18AD8D]/30 px-3 py-1 text-[11px] font-medium text-[#0A1F1B] hover:bg-[#18AD8D]/8"
                     >
                       <Plus className="h-3 w-3" />
                       Add model
@@ -696,21 +980,23 @@ export default function PriceList() {
                     <button
                       type="button"
                       onClick={() => openCsvImport(page)}
-                      className="print:hidden inline-flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1 text-[11px] font-medium text-[#0A1F1B] hover:bg-neutral-50"
+                      className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1 text-[11px] font-medium text-[#0A1F1B] hover:bg-neutral-50"
                     >
                       <Upload className="h-3 w-3" />
                       Import CSV
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => deletePage(page.id)}
-                      className="print:hidden inline-flex items-center rounded-full border border-neutral-200 p-1.5 text-neutral-400 hover:text-[#FF6503]"
-                      aria-label={`Delete ${pageLabel} page`}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
+                    {isFirstBrandPage ? (
+                      <button
+                        type="button"
+                        onClick={() => deletePage(page.id)}
+                        className="inline-flex items-center rounded-full border border-neutral-200 p-1.5 text-neutral-400 hover:text-[#FF6503]"
+                        aria-label={`Delete ${brand}`}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    ) : null}
                     <div className="rounded-full border border-[#18AD8D]/25 bg-[#18AD8D]/8 px-3 py-1 text-[11px] font-medium text-[#0A1F1B]">
-                      {items.length} {items.length === 1 ? "model" : "models"}
+                      {brandItemCount} {brandItemCount === 1 ? "model" : "models"}
                     </div>
                   </div>
                 </div>
@@ -743,16 +1029,16 @@ export default function PriceList() {
                     </div>
                   </div>
                 ) : (
-                <div className="overflow-hidden rounded-lg border border-neutral-200">
-                  <table className="w-full border-collapse text-[11px]">
+                <div className="rounded-lg border border-neutral-200">
+                  <table className="w-full table-fixed border-collapse text-[11px]">
                     <thead>
                       <tr className="bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase">
                         <th className="print:hidden w-7 py-1 pr-0 pl-1.5 font-semibold">
                           <span className="sr-only">Reorder</span>
                         </th>
                         <th className="w-7 py-1 pr-1.5 pl-1 font-semibold">#</th>
-                        <th className="w-[38%] py-1 pr-1.5 font-semibold">Product</th>
-                        <th className="w-16 py-1 pr-1.5 text-center font-semibold">
+                        <th className="w-[78mm] py-1 pr-1.5 font-semibold">Product</th>
+                        <th className="w-28 py-1 pr-1.5 text-center font-semibold">
                           Type
                         </th>
                         <th className="w-16 py-1 pr-1.5 text-center font-semibold">
@@ -791,33 +1077,37 @@ export default function PriceList() {
                         <tr
                           key={product.id}
                           onDragOver={(event) => {
-                            if (draggingModel?.pageId !== page.id) return;
+                            if (draggingModel?.brand !== brand) return;
                             event.preventDefault();
                           }}
                           onDrop={(event) => {
                             event.preventDefault();
-                            if (draggingModel?.pageId !== page.id) return;
-                            moveModel(page.id, draggingModel.index, rowIndex);
+                            if (draggingModel?.brand !== brand) return;
+                            moveModel(
+                              brand,
+                              draggingModel.index,
+                              brandOffset + rowIndex,
+                            );
                             setDraggingModel(null);
                           }}
                           className={`break-inside-avoid ${
                             rowIndex % 2 === 0 ? "bg-white" : "bg-[#F4FBF9]"
                           } ${
-                            draggingModel?.pageId === page.id &&
-                            draggingModel.index === rowIndex
+                            draggingModel?.brand === brand &&
+                            draggingModel.index === brandOffset + rowIndex
                               ? "bg-[#18AD8D]/10"
                               : ""
                           }`}
                         >
-                          <td className="print:hidden py-0.5 pr-0 pl-1">
+                          <td className="print:hidden py-0.5 pr-0 pl-1 align-top">
                             <div className="flex items-center">
                               <button
                                 type="button"
                                 draggable
                                 onDragStart={() =>
                                   setDraggingModel({
-                                    pageId: page.id,
-                                    index: rowIndex,
+                                    brand,
+                                    index: brandOffset + rowIndex,
                                   })
                                 }
                                 onDragEnd={() => setDraggingModel(null)}
@@ -828,37 +1118,32 @@ export default function PriceList() {
                               </button>
                               <ReorderControls
                                 label={product.name}
-                                index={rowIndex}
-                                total={items.length}
-                                onMove={(from, to) =>
-                                  moveModel(page.id, from, to)
-                                }
+                                index={brandOffset + rowIndex}
+                                total={brandItemCount}
+                                onMove={(from, to) => moveModel(brand, from, to)}
                               />
                             </div>
                           </td>
-                          <td className="py-0.5 pr-1.5 pl-1 text-[10px] font-medium text-neutral-400">
+                          <td className="py-0.5 pr-1.5 pl-1 align-top text-[10px] font-medium text-neutral-400">
                             {String(brandOffset + rowIndex + 1).padStart(2, "0")}
                           </td>
-                          <td className="w-[38%] py-0.5 pr-1.5">
-                            <p className="line-clamp-1 leading-tight">
-                              <span className="font-semibold text-[#0A1F1B]">
-                                {product.name}
-                              </span>
-                              {product.description.trim() ? (
-                                <span className="font-normal text-neutral-500">
-                                  {" "}
-                                  · {product.description.trim()}
-                                </span>
-                              ) : null}
+                          <td className="w-[78mm] py-0.5 pr-1.5 align-top">
+                            <p className="font-semibold leading-tight break-words text-[#0A1F1B]">
+                              {product.name}
                             </p>
+                            {product.description.trim() ? (
+                              <p className="mt-0.5 text-[9px] leading-snug font-normal break-words whitespace-normal text-neutral-500">
+                                {product.description.trim()}
+                              </p>
+                            ) : null}
                           </td>
-                          <td className="py-0.5 pr-1.5">
-                            <div className="flex flex-nowrap justify-center gap-0.5 overflow-hidden">
+                          <td className="py-0.5 pr-1.5 align-top">
+                            <div className="flex flex-wrap justify-center gap-px">
                               {product.deviceTypes.map((type) => (
                                 <span
                                   key={type}
                                   title={DEVICE_TYPE_LABELS[type]}
-                                  className="inline-flex min-w-[2.25rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1 py-px text-[8px] font-semibold tracking-[0.08em] text-[#0A1F1B]"
+                                  className="inline-flex min-w-[1.65rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1 py-px text-[7px] font-semibold tracking-[0.06em] text-[#0A1F1B]"
                                 >
                                   {type}
                                 </span>

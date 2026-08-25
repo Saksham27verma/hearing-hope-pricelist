@@ -10,7 +10,7 @@ import {
 import { ensureCatalogSchema, getDatabaseUrl, sql } from "@/lib/db";
 import {
   catalogLayoutChanged,
-  paginateCatalog,
+  mergeBrandPages,
 } from "@/lib/paginate-catalog";
 
 const catalogFilePath = path.join(process.cwd(), "data", "catalog.json");
@@ -111,10 +111,8 @@ async function writeCatalogToDb(catalog: StoredCatalog) {
 }
 
 function withPagedCatalog(catalog: StoredCatalog): StoredCatalog {
-  const paginated = paginateCatalog(catalog);
-  return paginated.products.length === catalog.products.length
-    ? paginated
-    : catalog;
+  const merged = mergeBrandPages(catalog);
+  return merged.products.length === catalog.products.length ? merged : catalog;
 }
 
 async function persistCatalog(catalog: StoredCatalog) {
