@@ -55,9 +55,19 @@ body {
     break-before: page;
   }
 
+  .print-page footer {
+    flex-shrink: 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-table-wrap {
+    min-height: 0;
+    overflow: hidden;
+  }
+
   tr,
-  thead,
-  tbody {
+  thead {
     break-inside: avoid;
     page-break-inside: avoid;
   }

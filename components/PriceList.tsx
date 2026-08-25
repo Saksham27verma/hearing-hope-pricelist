@@ -42,6 +42,7 @@ import PageEditor from "@/components/PageEditor";
 import {
   layoutPrintSections,
   mergeBrandPages,
+  PACKING_SAFETY_MM,
   reorderBrandList,
   reorderBrandProducts,
   type PackingMetrics,
@@ -284,7 +285,7 @@ function BrandWave() {
 
 function PageFooter({ brand }: { brand: string }) {
   return (
-    <footer className="mt-auto pt-1.5">
+    <footer className="mt-auto shrink-0 pt-1.5">
       <div className="mb-1.5 h-px w-full bg-gradient-to-r from-[#18AD8D] via-[#18AD8D]/20 to-[#FF6503]" />
       <div className="flex items-end justify-between gap-4">
         <div>
@@ -318,6 +319,9 @@ export default function PriceList() {
       @page { size: A4; margin: 0; }
       html, body { margin: 0; padding: 0; background: #fff; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .print-page { height: 297mm !important; max-height: 297mm !important; overflow: hidden !important; }
+      .print-page footer { flex-shrink: 0 !important; break-inside: avoid; page-break-inside: avoid; }
+      .print-table-wrap { min-height: 0 !important; overflow: hidden !important; }
     `,
   });
 
@@ -423,6 +427,11 @@ export default function PriceList() {
       const padTop = Number.parseFloat(innerStyle.paddingTop) || 0;
       const padBottom = Number.parseFloat(innerStyle.paddingBottom) || 0;
       const stripePx = 4;
+      const notesHeight = Math.max(
+        notes.getBoundingClientRect().height,
+        28,
+      );
+      const footerHeight = footer.getBoundingClientRect().height;
       const bodyPx =
         297 * pxPerMm -
         stripePx -
@@ -430,9 +439,9 @@ export default function PriceList() {
         padBottom -
         top.getBoundingClientRect().height -
         head.getBoundingClientRect().height -
-        notes.getBoundingClientRect().height -
-        footer.getBoundingClientRect().height -
-        3;
+        notesHeight -
+        footerHeight -
+        PACKING_SAFETY_MM * pxPerMm;
 
       const rowHeightsPx: Record<string, number> = {};
       let heightSum = 0;
@@ -442,7 +451,7 @@ export default function PriceList() {
       )) {
         const id = row.dataset.productId;
         if (!id) continue;
-        const height = row.getBoundingClientRect().height;
+        const height = Math.ceil(row.getBoundingClientRect().height) + 1;
         rowHeightsPx[id] = height;
         heightSum += height;
         heightCount += 1;
@@ -775,7 +784,11 @@ export default function PriceList() {
               data-packing-notes
               className="mt-1 space-y-0 text-[8px] leading-tight text-neutral-400"
             >
-              <p>RIC Receiver in Canal · CIC Completely in Canal</p>
+              <p>
+                BTE Behind the Ear · RIC Receiver in Canal · CIC Completely in
+                Canal · IIC Invisible in Canal · ITE In the Ear · ITC In the
+                Canal
+              </p>
               <p>
                 Teal badge = rechargeable · Orange badge = Bluetooth
                 connectivity
@@ -913,7 +926,8 @@ export default function PriceList() {
                 <div className="h-full flex-1 bg-[#FF6503]" />
               </div>
 
-              <div className="flex flex-1 flex-col px-5 pt-3 pb-3">
+              <div className="flex min-h-0 flex-1 flex-col px-5 pt-3 pb-3">
+                <div className="shrink-0">
                 <ClinicHeader compact />
                 <BrandWave />
 
@@ -1000,6 +1014,7 @@ export default function PriceList() {
                     </div>
                   </div>
                 </div>
+                </div>
 
                 {items.length === 0 ? (
                   <div className="print:hidden flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-neutral-200 px-6 py-16 text-center">
@@ -1029,7 +1044,7 @@ export default function PriceList() {
                     </div>
                   </div>
                 ) : (
-                <div className="rounded-lg border border-neutral-200">
+                <div className="print-table-wrap min-h-0 flex-1 overflow-hidden rounded-lg border border-neutral-200">
                   <table className="w-full table-fixed border-collapse text-[11px]">
                     <thead>
                       <tr className="bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase">
@@ -1220,7 +1235,7 @@ export default function PriceList() {
                 </div>
                 )}
 
-                <div className="mt-1 space-y-0 text-[8px] leading-tight text-neutral-400">
+                <div className="mt-1 shrink-0 space-y-0 text-[8px] leading-tight text-neutral-400">
                   <p>
                     {typesOnPage
                       .map((type) => `${type} ${DEVICE_TYPE_LABELS[type]}`)
