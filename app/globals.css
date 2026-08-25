@@ -45,6 +45,9 @@ body {
     box-shadow: none !important;
     max-width: none !important;
     min-height: 297mm;
+    height: 297mm;
+    max-height: 297mm;
+    overflow: hidden;
   }
 
   .print-page:not(:first-child) {

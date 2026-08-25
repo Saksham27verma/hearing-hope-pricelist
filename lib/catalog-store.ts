@@ -8,6 +8,10 @@ import {
   type StoredCatalog,
 } from "@/data/products";
 import { ensureCatalogSchema, getDatabaseUrl, sql } from "@/lib/db";
+import {
+  catalogLayoutChanged,
+  paginateCatalog,
+} from "@/lib/paginate-catalog";
 
 const catalogFilePath = path.join(process.cwd(), "data", "catalog.json");
 const CATALOG_ID = "main";
@@ -106,24 +110,42 @@ async function writeCatalogToDb(catalog: StoredCatalog) {
   `;
 }
 
-export async function readCatalog(): Promise<StoredCatalog> {
-  if (cachedCatalog && cachedCatalog.products.length > 0) {
-    return cachedCatalog;
-  }
+function withPagedCatalog(catalog: StoredCatalog): StoredCatalog {
+  const paginated = paginateCatalog(catalog);
+  return paginated.products.length === catalog.products.length
+    ? paginated
+    : catalog;
+}
 
+async function persistCatalog(catalog: StoredCatalog) {
+  await writeCatalogToDb(catalog);
+  await writeCatalogFile(catalog);
+  cachedCatalog = catalog;
+}
+
+export async function readCatalog(): Promise<StoredCatalog> {
   const fromDb = await readCatalogFromDb();
   if (fromDb && fromDb.products.length > 0) {
-    cachedCatalog = fromDb;
-    return fromDb;
+    const payload = withPagedCatalog(fromDb);
+    if (
+      payload.products.length === fromDb.products.length &&
+      catalogLayoutChanged(fromDb, payload)
+    ) {
+      await persistCatalog(payload);
+    } else {
+      cachedCatalog = payload;
+    }
+    return payload;
+  }
+
+  if (cachedCatalog && cachedCatalog.products.length > 0) {
+    return withPagedCatalog(cachedCatalog);
   }
 
   const fromFile = await readCatalogFile();
   if (fromFile && fromFile.products.length > 0) {
-    if (getDatabaseUrl()) {
-      await writeCatalogToDb(fromFile);
-    }
-    cachedCatalog = fromFile;
-    return fromFile;
+    cachedCatalog = withPagedCatalog(fromFile);
+    return cachedCatalog;
   }
 
   cachedCatalog = emptyCatalog();
@@ -131,16 +153,15 @@ export async function readCatalog(): Promise<StoredCatalog> {
 }
 
 export async function writeCatalog(catalog: StoredCatalog): Promise<StoredCatalog> {
-  const existing = await readCatalog();
+  const existing =
+    (await readCatalogFromDb()) ?? cachedCatalog ?? emptyCatalog();
   if (existing.products.length - catalog.products.length >= 10) {
-    return existing;
+    return withPagedCatalog(existing);
   }
-  const payload: StoredCatalog = {
-    pages: catalog.pages,
-    products: catalog.products,
-  };
-  await writeCatalogToDb(payload);
-  await writeCatalogFile(payload);
-  cachedCatalog = payload;
+  const payload = withPagedCatalog(catalog);
+  if (existing.products.length - payload.products.length >= 10) {
+    return withPagedCatalog(existing);
+  }
+  await persistCatalog(payload);
   return payload;
 }

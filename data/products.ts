@@ -337,5 +337,5 @@ export function labelForPage(page: CatalogPage, pages: CatalogPage[]) {
   const siblings = pages.filter((item) => item.brand === page.brand);
   if (siblings.length <= 1) return page.brand;
   const index = siblings.findIndex((item) => item.id === page.id) + 1;
-  return `${page.brand} · page ${index}`;
+  return `${page.brand} · page ${index} of ${siblings.length}`;
 }

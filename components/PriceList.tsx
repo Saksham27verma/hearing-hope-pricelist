@@ -33,6 +33,7 @@ import CatalogEditor from "@/components/CatalogEditor";
 import { ClosingPage, CoverPage } from "@/components/CatalogPages";
 import CsvImport from "@/components/CsvImport";
 import PageEditor from "@/components/PageEditor";
+import { MODELS_PER_PAGE, paginateCatalog } from "@/lib/paginate-catalog";
 
 const STORAGE_KEY = "hearing-hope-catalog-v3";
 const LEGACY_STORAGE_KEY = "hearing-hope-catalog-v2";
@@ -255,22 +256,22 @@ function FeatureMark({
   return (
     <span
       aria-label={`${label}: ${active ? "Yes" : "No"}`}
-      className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full ${
+      className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full ${
         active ? activeClass : "bg-neutral-100 text-neutral-300"
       }`}
     >
-      <Icon className="h-3.5 w-3.5" strokeWidth={2} />
+      <Icon className="h-3 w-3" strokeWidth={2} />
     </span>
   );
 }
 
-function ClinicHeader() {
+function ClinicHeader({ compact = false }: { compact?: boolean }) {
   return (
     <header className="flex items-center justify-between gap-4">
       <img
         src="/brand/logo.png"
         alt="Hearing Hope — Centre for Speech & Hearing"
-        className="h-[48px] w-auto object-contain"
+        className={`${compact ? "h-7" : "h-[48px]"} w-auto object-contain`}
       />
       <div className="text-right">
         <p className="text-[9px] font-semibold tracking-[0.28em] text-[#18AD8D] uppercase">
@@ -287,7 +288,7 @@ function BrandWave() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 282 13"
-      className="mt-2 h-2 w-full"
+      className="mt-1 h-1.5 w-full"
       aria-hidden="true"
     >
       <path
@@ -303,23 +304,23 @@ function BrandWave() {
 
 function PageFooter({ brand }: { brand: string }) {
   return (
-    <footer className="mt-auto pt-3">
-      <div className="mb-2 h-px w-full bg-gradient-to-r from-[#18AD8D] via-[#18AD8D]/20 to-[#FF6503]" />
+    <footer className="mt-auto pt-1.5">
+      <div className="mb-1.5 h-px w-full bg-gradient-to-r from-[#18AD8D] via-[#18AD8D]/20 to-[#FF6503]" />
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-semibold tracking-wide text-[#0A1F1B]">
+          <p className="text-[9px] font-semibold tracking-wide text-[#0A1F1B]">
             Hearing Hope · Centre for Speech & Hearing
           </p>
-          <p className="mt-1 flex items-center gap-1.5 text-[10px] text-neutral-500">
+          <p className="mt-0.5 flex items-center gap-1.5 text-[9px] text-neutral-500">
             <Phone className="h-3 w-3 text-[#18AD8D]" strokeWidth={2} />
             +91 97118 71168 · +91 97118 71169
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-medium text-[#18AD8D]">
+          <p className="text-[9px] font-medium text-[#18AD8D]">
             hearinghope.in
           </p>
-          <p className="mt-0.5 text-[9px] text-neutral-400">
+          <p className="mt-0.5 text-[8px] text-neutral-400">
             {brand} · Prices are MRP.
           </p>
         </div>
@@ -369,14 +370,18 @@ export default function PriceList() {
       };
       if (cancelled) return;
 
-      setPages(next.pages);
-      setCatalog(next.products);
-      cacheLocalCatalog(next);
+      const paginated = paginateCatalog(next);
+      const payload =
+        paginated.products.length === next.products.length ? paginated : next;
+
+      setPages(payload.pages);
+      setCatalog(payload.products);
+      cacheLocalCatalog(payload);
       if (
-        local &&
-        (!server || local.products.length > server.products.length)
+        payload.products.length > (server?.products.length ?? 0) ||
+        payload.pages.length !== (server?.pages.length ?? 0)
       ) {
-        await saveServerCatalog(local);
+        await saveServerCatalog(payload);
       }
       if (!cancelled) setHydrated(true);
     }
@@ -441,68 +446,86 @@ export default function PriceList() {
     setCsvImportOpen(true);
   }
 
+  function commitCatalog(next: StoredCatalog) {
+    const paginated = paginateCatalog(next);
+    const payload =
+      paginated.products.length === next.products.length ? paginated : next;
+    setPages(payload.pages);
+    setCatalog(payload.products);
+  }
+
   function savePage(page: CatalogPage) {
-    setPages((current) => {
-      const exists = current.some((item) => item.id === page.id);
-      if (exists) {
-        return current.map((item) => (item.id === page.id ? page : item));
-      }
-      return [...current, page];
-    });
-    setCatalog((current) =>
-      current.map((item) =>
+    const nextPages = pages.some((item) => item.id === page.id)
+      ? pages.map((item) => (item.id === page.id ? page : item))
+      : [...pages, page];
+    commitCatalog({
+      pages: nextPages,
+      products: catalog.map((item) =>
         item.pageId === page.id ? { ...item, brand: page.brand } : item,
       ),
-    );
+    });
   }
 
   function deletePage(id: string) {
-    setPages((current) => current.filter((page) => page.id !== id));
-    setCatalog((current) => current.filter((item) => item.pageId !== id));
+    commitCatalog({
+      pages: pages.filter((page) => page.id !== id),
+      products: catalog.filter((item) => item.pageId !== id),
+    });
   }
 
   function saveProduct(product: HearingAid) {
-    setCatalog((current) => {
-      const exists = current.some((item) => item.id === product.id);
-      if (exists) {
-        return current.map((item) =>
-          item.id === product.id ? product : item,
-        );
-      }
-      return [...current, product];
+    const exists = catalog.some((item) => item.id === product.id);
+    commitCatalog({
+      pages,
+      products: exists
+        ? catalog.map((item) => (item.id === product.id ? product : item))
+        : [...catalog, product],
     });
   }
 
   function importProducts(products: HearingAid[]) {
     if (products.length === 0) return;
-    setCatalog((current) => [...current, ...products]);
+    commitCatalog({
+      pages,
+      products: [...catalog, ...products],
+    });
   }
 
   function updateChannels(id: string, channels: string) {
-    setCatalog((current) =>
-      current.map((item) =>
+    commitCatalog({
+      pages,
+      products: catalog.map((item) =>
         item.id === id ? { ...item, channels } : item,
       ),
-    );
+    });
   }
 
   function deleteProduct(id: string) {
-    setCatalog((current) => current.filter((item) => item.id !== id));
+    commitCatalog({
+      pages,
+      products: catalog.filter((item) => item.id !== id),
+    });
   }
 
   function movePage(from: number, to: number) {
-    setPages((current) => moveItem(current, from, to));
+    commitCatalog({
+      pages: moveItem(pages, from, to),
+      products: catalog,
+    });
   }
 
   function moveModel(pageId: string, from: number, to: number) {
-    setCatalog((current) => reorderPageProducts(current, pageId, from, to));
+    commitCatalog({
+      pages,
+      products: reorderPageProducts(catalog, pageId, from, to),
+    });
   }
 
   return (
     <div className="min-h-screen bg-[#e8eeec] py-10 print:bg-white print:py-0">
       <div className="print:hidden fixed top-6 right-6 z-50 flex items-center gap-2">
         <div className="rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-[#0A1F1B] shadow-lg ring-1 ring-black/5">
-          {catalog.length} models
+          {catalog.length} models · {MODELS_PER_PAGE}/page
         </div>
         <button
           type="button"
@@ -579,6 +602,10 @@ export default function PriceList() {
           );
           const brand = page.brand;
           const pageLabel = labelForPage(page, pages);
+          const brandOffset = pageSections
+            .slice(0, pageIndex)
+            .filter((section) => section.page.brand === brand)
+            .reduce((sum, section) => sum + section.items.length, 0);
 
           return (
             <section
@@ -593,7 +620,7 @@ export default function PriceList() {
                 movePage(draggingPage, pageIndex);
                 setDraggingPage(null);
               }}
-              className={`print-page mx-auto flex min-h-[297mm] w-full max-w-[210mm] flex-col overflow-hidden bg-white shadow-[0_18px_50px_rgba(10,31,27,0.12)] print:max-w-none print:shadow-none print:break-before-page ${
+              className={`print-page mx-auto flex h-auto min-h-[297mm] w-full max-w-[210mm] flex-col overflow-hidden bg-white shadow-[0_18px_50px_rgba(10,31,27,0.12)] print:h-[297mm] print:max-h-[297mm] print:max-w-none print:shadow-none print:break-before-page ${
                 items.length === 0 ? "print:hidden" : ""
               } ${draggingPage === pageIndex ? "ring-2 ring-[#18AD8D]/40" : ""}`}
             >
@@ -602,13 +629,13 @@ export default function PriceList() {
                 <div className="h-full flex-1 bg-[#FF6503]" />
               </div>
 
-              <div className="flex flex-1 flex-col px-6 pt-4 pb-4">
-                <ClinicHeader />
+              <div className="flex flex-1 flex-col px-5 pt-3 pb-3">
+                <ClinicHeader compact />
                 <BrandWave />
 
-                <div className="mt-3 mb-3 flex items-end justify-between gap-3">
+                <div className="mt-1.5 mb-1.5 flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-[9px] font-semibold tracking-[0.22em] text-[#FF6503] uppercase">
+                    <p className="text-[8px] font-semibold tracking-[0.22em] text-[#FF6503] uppercase">
                       Manufacturer
                     </p>
                     {BRAND_LOGOS[brand] ? (
@@ -616,22 +643,22 @@ export default function PriceList() {
                         <img
                           src={BRAND_LOGOS[brand]}
                           alt={brand}
-                          className="mt-1.5 h-8 max-w-[180px] w-auto object-contain object-left"
+                          className="mt-1 h-6 max-w-[150px] w-auto object-contain object-left"
                         />
                         <h2 className="sr-only">{brand}</h2>
                       </>
                     ) : (
-                      <h2 className="mt-1.5 text-[22px] leading-none font-semibold tracking-tight text-[#0A1F1B]">
+                      <h2 className="mt-1 text-[18px] leading-none font-semibold tracking-tight text-[#0A1F1B]">
                         {brand}
                       </h2>
                     )}
                     {pageLabel !== brand ? (
-                      <p className="mt-1 text-[10px] font-medium text-neutral-400">
+                      <p className="mt-0.5 text-[9px] font-medium text-neutral-400">
                         {pageLabel}
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap items-center justify-end gap-1.5">
+                  <div className="print:hidden flex flex-wrap items-center justify-end gap-1.5">
                     <div className="print:hidden flex items-center rounded-full border border-neutral-200 bg-white pr-1">
                       <button
                         type="button"
@@ -716,45 +743,45 @@ export default function PriceList() {
                     </div>
                   </div>
                 ) : (
-                <div className="overflow-hidden rounded-xl border border-neutral-200">
-                  <table className="w-full border-collapse text-[12px]">
+                <div className="overflow-hidden rounded-lg border border-neutral-200">
+                  <table className="w-full border-collapse text-[11px]">
                     <thead>
-                      <tr className="bg-[#0A1F1B] text-left text-[9px] font-semibold tracking-[0.12em] text-white uppercase">
-                        <th className="print:hidden w-7 py-1.5 pr-0 pl-1.5 font-semibold">
+                      <tr className="bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase">
+                        <th className="print:hidden w-7 py-1 pr-0 pl-1.5 font-semibold">
                           <span className="sr-only">Reorder</span>
                         </th>
-                        <th className="w-8 py-1.5 pr-2 pl-1 font-semibold">#</th>
-                        <th className="py-1.5 pr-2 font-semibold">Product</th>
-                        <th className="py-1.5 pr-2 text-center font-semibold">
+                        <th className="w-7 py-1 pr-1.5 pl-1 font-semibold">#</th>
+                        <th className="w-[38%] py-1 pr-1.5 font-semibold">Product</th>
+                        <th className="w-16 py-1 pr-1.5 text-center font-semibold">
                           Type
                         </th>
-                        <th className="py-1.5 pr-2 text-center font-semibold">
+                        <th className="w-16 py-1 pr-1.5 text-center font-semibold">
                           Channels/Band
                         </th>
-                        <th className="py-1.5 pr-2 text-center font-semibold">
+                        <th className="w-12 py-1 pr-1.5 text-center font-semibold">
                           Unit
                         </th>
-                        <th className="py-1.5 pr-2 text-center font-semibold">
+                        <th className="w-16 py-1 pr-1.5 text-center font-semibold">
                           Warranty (yrs)
                         </th>
-                        <th className="w-12 py-1.5 pr-1 text-center font-semibold">
+                        <th className="w-9 py-1 pr-1 text-center font-semibold">
                           <BatteryCharging
-                            className="mx-auto h-3.5 w-3.5 text-[#18AD8D]"
+                            className="mx-auto h-3 w-3 text-[#18AD8D]"
                             strokeWidth={2}
                           />
                           <span className="sr-only">Rechargeable</span>
                         </th>
-                        <th className="w-12 py-1.5 pr-1 text-center font-semibold">
+                        <th className="w-9 py-1 pr-1 text-center font-semibold">
                           <Bluetooth
-                            className="mx-auto h-3.5 w-3.5 text-[#FF6503]"
+                            className="mx-auto h-3 w-3 text-[#FF6503]"
                             strokeWidth={2}
                           />
                           <span className="sr-only">Bluetooth</span>
                         </th>
-                        <th className="py-1.5 pr-2 text-right font-semibold">
+                        <th className="py-1 pr-1.5 text-right font-semibold">
                           MRP
                         </th>
-                        <th className="print:hidden w-14 py-1.5 pr-1.5 text-right font-semibold">
+                        <th className="print:hidden w-14 py-1 pr-1.5 text-right font-semibold">
                           <span className="sr-only">Edit</span>
                         </th>
                       </tr>
@@ -782,7 +809,7 @@ export default function PriceList() {
                               : ""
                           }`}
                         >
-                          <td className="print:hidden py-1 pr-0 pl-1">
+                          <td className="print:hidden py-0.5 pr-0 pl-1">
                             <div className="flex items-center">
                               <button
                                 type="button"
@@ -809,33 +836,36 @@ export default function PriceList() {
                               />
                             </div>
                           </td>
-                          <td className="py-1 pr-2 pl-1 text-[11px] font-medium text-neutral-400">
-                            {String(rowIndex + 1).padStart(2, "0")}
+                          <td className="py-0.5 pr-1.5 pl-1 text-[10px] font-medium text-neutral-400">
+                            {String(brandOffset + rowIndex + 1).padStart(2, "0")}
                           </td>
-                          <td className="py-1 pr-2">
-                            <p className="font-semibold text-[#0A1F1B]">
-                              {product.name}
+                          <td className="w-[38%] py-0.5 pr-1.5">
+                            <p className="line-clamp-1 leading-tight">
+                              <span className="font-semibold text-[#0A1F1B]">
+                                {product.name}
+                              </span>
+                              {product.description.trim() ? (
+                                <span className="font-normal text-neutral-500">
+                                  {" "}
+                                  · {product.description.trim()}
+                                </span>
+                              ) : null}
                             </p>
-                            {product.description.trim() ? (
-                              <p className="mt-0.5 text-[10px] font-normal leading-snug text-neutral-500">
-                                {product.description}
-                              </p>
-                            ) : null}
                           </td>
-                          <td className="py-1 pr-2">
-                            <div className="flex flex-wrap justify-center gap-0.5">
+                          <td className="py-0.5 pr-1.5">
+                            <div className="flex flex-nowrap justify-center gap-0.5 overflow-hidden">
                               {product.deviceTypes.map((type) => (
                                 <span
                                   key={type}
                                   title={DEVICE_TYPE_LABELS[type]}
-                                  className="inline-flex min-w-[2.5rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1.5 py-px text-[9px] font-semibold tracking-[0.08em] text-[#0A1F1B]"
+                                  className="inline-flex min-w-[2.25rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1 py-px text-[8px] font-semibold tracking-[0.08em] text-[#0A1F1B]"
                                 >
                                   {type}
                                 </span>
                               ))}
                             </div>
                           </td>
-                          <td className="py-1 pr-2 text-center">
+                          <td className="py-0.5 pr-1.5 text-center">
                             <input
                               type="text"
                               value={product.channels}
@@ -845,21 +875,21 @@ export default function PriceList() {
                                 updateChannels(product.id, event.target.value)
                               }
                               onClick={(event) => event.stopPropagation()}
-                              className="print:hidden mx-auto block w-[4.75rem] rounded border border-transparent bg-transparent px-1 py-0.5 text-center text-[12px] tabular-nums font-semibold text-[#0A1F1B] outline-none placeholder:font-medium placeholder:text-neutral-300 hover:border-neutral-200 hover:bg-white focus:border-[#18AD8D] focus:bg-white"
+                              className="print:hidden mx-auto block w-[4.25rem] rounded border border-transparent bg-transparent px-1 py-0 text-center text-[11px] tabular-nums font-semibold text-[#0A1F1B] outline-none placeholder:font-medium placeholder:text-neutral-300 hover:border-neutral-200 hover:bg-white focus:border-[#18AD8D] focus:bg-white"
                             />
                             <span className="hidden print:inline tabular-nums font-semibold text-[#0A1F1B]">
                               {product.channels.trim() || "—"}
                             </span>
                           </td>
-                          <td className="py-1 pr-2 text-center">
-                            <span className="inline-flex rounded-full bg-neutral-100 px-2 py-px text-[10px] font-medium text-neutral-600">
+                          <td className="py-0.5 pr-1.5 text-center">
+                            <span className="inline-flex rounded-full bg-neutral-100 px-1.5 py-px text-[9px] font-medium text-neutral-600">
                               {product.unit}
                             </span>
                           </td>
-                          <td className="py-1 pr-2 text-center tabular-nums font-semibold text-[#0A1F1B]">
+                          <td className="py-0.5 pr-1.5 text-center tabular-nums font-semibold text-[#0A1F1B]">
                             {product.warrantyYears}
                           </td>
-                          <td className="py-1 pr-1 text-center">
+                          <td className="py-0.5 pr-1 text-center">
                             <FeatureMark
                               active={product.isRechargeable}
                               label="Rechargeable"
@@ -867,7 +897,7 @@ export default function PriceList() {
                               tone="teal"
                             />
                           </td>
-                          <td className="py-1 pr-1 text-center">
+                          <td className="py-0.5 pr-1 text-center">
                             <FeatureMark
                               active={product.hasBluetooth}
                               label="Bluetooth"
@@ -875,10 +905,10 @@ export default function PriceList() {
                               tone="orange"
                             />
                           </td>
-                          <td className="py-1 pr-2 text-right text-[13px] font-semibold tabular-nums text-[#FF6503]">
+                          <td className="py-0.5 pr-1.5 text-right text-[12px] font-semibold tabular-nums text-[#FF6503]">
                             {formatInr(product.mrp)}
                           </td>
-                          <td className="print:hidden py-1 pr-1.5">
+                          <td className="print:hidden py-0.5 pr-1.5">
                             <div className="flex justify-end gap-0.5">
                               <button
                                 type="button"
@@ -905,7 +935,7 @@ export default function PriceList() {
                 </div>
                 )}
 
-                <div className="mt-2 space-y-0.5 text-[9px] leading-relaxed text-neutral-400">
+                <div className="mt-1 space-y-0 text-[8px] leading-tight text-neutral-400">
                   <p>
                     {typesOnPage
                       .map((type) => `${type} ${DEVICE_TYPE_LABELS[type]}`)

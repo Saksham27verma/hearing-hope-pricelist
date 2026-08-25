@@ -3,6 +3,7 @@
 import { useEffect, useState, type DragEvent } from "react";
 import { FileSpreadsheet, Upload, X } from "lucide-react";
 import { CSV_COLUMNS, CSV_TEMPLATE, parseCatalogCsv } from "@/lib/csv-import";
+import { MODELS_PER_PAGE } from "@/lib/paginate-catalog";
 import type { CatalogPage, HearingAid } from "@/data/products";
 
 function formatInr(value: number) {
@@ -98,8 +99,9 @@ export default function CsvImport({
               Import {page.brand} devices
             </h2>
             <p className="mt-1 text-sm text-neutral-500">
-              Models in this CSV are added to the current {page.brand} page.
-              Brand is taken from the page, so do not include a brand column.
+              Models are added to {page.brand}. Extra rows beyond{" "}
+              {MODELS_PER_PAGE} per page go onto a new {page.brand} page
+              automatically. Do not include a brand column.
             </p>
           </div>
           <button
