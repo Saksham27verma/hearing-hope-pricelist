@@ -3,7 +3,11 @@ import type { CatalogPage, HearingAid, StoredCatalog } from "@/data/products";
 /** Fallback usable table-body height when row metrics are not measured yet. */
 export const PRINT_BODY_MM = 228;
 
-/** Extra clearance so print/PDF never paints rows over the footer. */
+/**
+ * Extra clearance so print/PDF never paints rows over the footer.
+ * Sized to absorb sub-pixel rounding, thead wrap, and Chrome print chrome
+ * so a full row is never half-clipped at the page edge.
+ */
 export const PACKING_SAFETY_MM = 8;
 
 const BASE_ROW_MM = 6.2;

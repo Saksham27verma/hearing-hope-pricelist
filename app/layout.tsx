@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { jakarta } from "./fonts";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Hearing Hope – Recommended Price List",
+  title: "Hearing Hope – Official Pricelist",
   description:
     "Recommended printable A4 price list for Hearing Hope hearing aids.",
 };

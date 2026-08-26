@@ -66,9 +66,16 @@ body {
     overflow: hidden;
   }
 
-  tr,
   thead {
+    display: table-header-group;
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  tbody tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: auto;
+    page-break-after: auto;
   }
 }

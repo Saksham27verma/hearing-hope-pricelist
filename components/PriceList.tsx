@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ComponentType,
-} from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import {
   BatteryCharging,
@@ -36,9 +29,18 @@ import {
   type StoredCatalog,
 } from "@/data/products";
 import CatalogEditor from "@/components/CatalogEditor";
-import { ClosingPage, CoverPage, HearingAidTypesPage } from "@/components/CatalogPages";
+import {
+  AudiogramPage,
+  ClosingPage,
+  CoverPage,
+  FeatureMark,
+  FittingJourneyPage,
+  HearingAidTypesPage,
+  PriceGuidePage,
+} from "@/components/CatalogPages";
 import CsvImport from "@/components/CsvImport";
 import PageEditor from "@/components/PageEditor";
+import { formatInr } from "@/lib/format";
 import {
   catalogLayoutChanged,
   layoutPrintSections,
@@ -51,6 +53,29 @@ import {
 
 const STORAGE_KEY = "hearing-hope-catalog-v3";
 const LEGACY_STORAGE_KEY = "hearing-hope-catalog-v2";
+
+/** Print-accurate column widths. Shared by the packing probe and the live table. */
+const COL = {
+  num: "w-7",
+  product: "w-[78mm]",
+  type: "w-28",
+  channels: "w-[22mm]",
+  unit: "w-12",
+  warranty: "w-[15mm]",
+  badge: "w-9",
+  mrp: "w-[16mm]",
+};
+
+function ChannelsColHead() {
+  return (
+    <th
+      className={`${COL.channels} overflow-hidden py-1 pr-1 text-center font-semibold tracking-[0.04em] leading-3`}
+    >
+      <span className="block">Channels</span>
+      <span className="block">/ Bands</span>
+    </th>
+  );
+}
 
 function normalizeCatalog(items: HearingAid[]): HearingAid[] {
   return items.map((item) => {
@@ -93,14 +118,6 @@ function pagesFromProducts(items: HearingAid[]): CatalogPage[] {
     pages.push({ id, brand: item.brand });
   }
   return pages;
-}
-
-function formatInr(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(value);
 }
 
 function parseStoredCatalog(raw: string | null): StoredCatalog | null {
@@ -222,34 +239,6 @@ function ReorderControls({
   );
 }
 
-function FeatureMark({
-  active,
-  label,
-  Icon,
-  tone,
-}: {
-  active: boolean;
-  label: string;
-  Icon: ComponentType<{ className?: string; strokeWidth?: number }>;
-  tone: "teal" | "orange";
-}) {
-  const activeClass =
-    tone === "teal"
-      ? "bg-[#18AD8D]/12 text-[#18AD8D]"
-      : "bg-[#FF6503]/12 text-[#FF6503]";
-
-  return (
-    <span
-      aria-label={`${label}: ${active ? "Yes" : "No"}`}
-      className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full ${
-        active ? activeClass : "bg-neutral-100 text-neutral-300"
-      }`}
-    >
-      <Icon className="h-3 w-3" strokeWidth={2} />
-    </span>
-  );
-}
-
 function ClinicHeader({ compact = false }: { compact?: boolean }) {
   return (
     <header className="flex items-center justify-between gap-4">
@@ -260,7 +249,7 @@ function ClinicHeader({ compact = false }: { compact?: boolean }) {
       />
       <div className="text-right">
         <p className="text-[9px] font-semibold tracking-[0.28em] text-[#18AD8D] uppercase">
-          Recommended Price List
+          Official Pricelist
         </p>
         <p className="mt-0.5 text-xs font-medium text-[#0A1F1B]">August 2026</p>
       </div>
@@ -314,19 +303,27 @@ function PageFooter({ brand }: { brand: string }) {
   );
 }
 
-export default function PriceList() {
+export default function PriceList({
+  fontVariableClass,
+}: {
+  fontVariableClass: string;
+}) {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef,
-    documentTitle: "Hearing Hope - Recommended Price List",
+    documentTitle: "Hearing Hope - Official Pricelist",
     pageStyle: `
       @page { size: A4; margin: 0; }
       html, body { margin: 0; padding: 0; background: #fff; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .print-page { height: 297mm !important; max-height: 297mm !important; overflow: hidden !important; }
       .print-page footer { flex-shrink: 0 !important; break-inside: avoid; page-break-inside: avoid; }
+      .print-page:not(:first-child) { break-before: page; page-break-before: always; }
       .print-table-wrap { min-height: 0 !important; overflow: hidden !important; }
+      thead { display: table-header-group; break-inside: avoid !important; page-break-inside: avoid !important; }
+      tbody tr { break-inside: avoid !important; page-break-inside: avoid !important; break-after: auto; page-break-after: auto; }
       .print\\:hidden { display: none !important; }
+      .hidden.print\\:inline { display: inline !important; }
     `,
   });
 
@@ -419,11 +416,12 @@ export default function PriceList() {
 
     function measure(root: HTMLDivElement) {
       const page = root.querySelector("[data-packing-page]");
+      const head = root.querySelector("[data-packing-head]");
       const notes = root.querySelector("[data-packing-notes]");
       const rows = [
         ...root.querySelectorAll<HTMLTableRowElement>("[data-packing-row]"),
       ];
-      if (!page || !notes || rows.length === 0) return;
+      if (!page || !head || !notes || rows.length === 0) return;
 
       const pageWidth = page.getBoundingClientRect().width;
       if (pageWidth < 40) return;
@@ -434,21 +432,21 @@ export default function PriceList() {
       for (const row of rows) {
         const id = row.dataset.productId;
         if (!id) continue;
-        // The probe row is a print-accurate replica (no on-screen reorder/edit
-        // controls), so its measured height matches the printed row almost
-        // exactly. Use it directly; PACKING_SAFETY_MM provides the clearance.
+        // Probe rows live in an unconstrained table at print width, so height
+        // is the full laid-out row (never clipped by the A4 shell). Ceil and
+        // add a 2px fudge so summed heights cannot undershoot print.
         const height = Math.round(row.getBoundingClientRect().height);
+        if (height < 8) continue;
         rowHeightsPx[id] = height;
         heightSum += height;
         heightCount += 1;
       }
 
-      const firstRow = rows[0]?.getBoundingClientRect();
-      if (!firstRow) return;
-      const notesTop = notes.getBoundingClientRect().top;
       const bodyPx = Math.max(
         80,
-        notesTop - firstRow.top - PACKING_SAFETY_MM * (pageWidth / 210),
+        notes.getBoundingClientRect().top -
+          head.getBoundingClientRect().bottom -
+          PACKING_SAFETY_MM * (pageWidth / 210),
       );
 
       setPackMetrics({
@@ -750,104 +748,52 @@ export default function PriceList() {
                 </p>
               </div>
             </div>
-            <div className="print-table-wrap min-h-0 flex-1 overflow-hidden rounded-lg border border-neutral-200">
+            <div
+              data-packing-wrap
+              className="print-table-wrap min-h-0 flex-1 overflow-hidden rounded-lg border border-neutral-200"
+            >
               <table className="w-full table-fixed border-collapse text-[11px]">
                 <thead data-packing-head>
                   <tr className="bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase">
-                    <th className="w-7 py-1 pr-1.5 pl-1 font-semibold">#</th>
-                    <th className="w-[78mm] py-1 pr-1.5 font-semibold">
+                    <th className={`${COL.num} py-1 pr-1.5 pl-1 font-semibold`}>
+                      #
+                    </th>
+                    <th className={`${COL.product} py-1 pr-1.5 font-semibold`}>
                       Product
                     </th>
-                    <th className="w-28 py-1 pr-1.5 text-center font-semibold">
+                    <th
+                      className={`${COL.type} py-1 pr-1.5 text-center font-semibold`}
+                    >
                       Type
                     </th>
-                    <th className="w-16 py-1 pr-1.5 text-center font-semibold">
-                      Channels/Band
-                    </th>
-                    <th className="w-12 py-1 pr-1.5 text-center font-semibold">
+                    <ChannelsColHead />
+                    <th
+                      className={`${COL.unit} overflow-hidden py-1 pr-1.5 text-center font-semibold tracking-[0.08em]`}
+                    >
                       Unit
                     </th>
-                    <th className="w-16 py-1 pr-1.5 text-center font-semibold">
+                    <th
+                      className={`${COL.warranty} py-1 pr-1.5 text-center font-semibold`}
+                    >
                       Warranty (yrs)
                     </th>
-                    <th className="w-9 py-1 pr-1 text-center font-semibold">
+                    <th
+                      className={`${COL.badge} py-1 pr-1 text-center font-semibold`}
+                    >
                       R
                     </th>
-                    <th className="w-9 py-1 pr-1 text-center font-semibold">
+                    <th
+                      className={`${COL.badge} py-1 pr-1 text-center font-semibold`}
+                    >
                       B
                     </th>
-                    <th className="py-1 pr-1.5 text-right font-semibold">
+                    <th
+                      className={`${COL.mrp} py-1 pr-1.5 text-right font-semibold`}
+                    >
                       MRP
                     </th>
                   </tr>
                 </thead>
-                <tbody>
-                  {catalog.map((product) => (
-                    <tr
-                      key={product.id}
-                      data-packing-row
-                      data-product-id={product.id}
-                    >
-                      <td className="py-0.5 pr-1.5 pl-1 align-top text-[10px] font-medium text-neutral-400">
-                        01
-                      </td>
-                      <td className="w-[78mm] py-0.5 pr-1.5 align-top">
-                        <p className="font-semibold leading-tight break-words text-[#0A1F1B]">
-                          {product.name}
-                        </p>
-                        {product.description.trim() ? (
-                          <p className="mt-0.5 text-[9px] leading-snug font-normal break-words whitespace-normal text-neutral-500">
-                            {product.description.trim()}
-                          </p>
-                        ) : null}
-                      </td>
-                      <td className="py-0.5 pr-1.5 align-top">
-                        <div className="flex flex-wrap justify-center gap-px">
-                          {product.deviceTypes.map((type) => (
-                            <span
-                              key={type}
-                              className="inline-flex min-w-[1.65rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1 py-px text-[7px] font-semibold tracking-[0.06em] text-[#0A1F1B]"
-                            >
-                              {type}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-0.5 pr-1.5 text-center">
-                        <span className="tabular-nums font-semibold">
-                          {product.channels.trim() || "—"}
-                        </span>
-                      </td>
-                      <td className="py-0.5 pr-1.5 text-center">
-                        <span className="inline-flex rounded-full bg-neutral-100 px-1.5 py-px text-[9px] font-medium text-neutral-600">
-                          {product.unit}
-                        </span>
-                      </td>
-                      <td className="py-0.5 pr-1.5 text-center tabular-nums font-semibold">
-                        {product.warrantyYears}
-                      </td>
-                      <td className="py-0.5 pr-1 text-center">
-                        <FeatureMark
-                          active={product.isRechargeable}
-                          label="Rechargeable"
-                          Icon={BatteryCharging}
-                          tone="teal"
-                        />
-                      </td>
-                      <td className="py-0.5 pr-1 text-center">
-                        <FeatureMark
-                          active={product.hasBluetooth}
-                          label="Bluetooth"
-                          Icon={Bluetooth}
-                          tone="orange"
-                        />
-                      </td>
-                      <td className="py-0.5 pr-1.5 text-right text-[12px] font-semibold tabular-nums text-[#FF6503]">
-                        {formatInr(product.mrp)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
               </table>
             </div>
             <div
@@ -869,11 +815,104 @@ export default function PriceList() {
             </div>
           </div>
         </div>
+        <div className="w-[210mm] px-5">
+          <div className="overflow-hidden rounded-lg border border-neutral-200">
+          <table className="w-full table-fixed border-collapse text-[11px]">
+          <colgroup>
+            <col className={COL.num} />
+            <col className={COL.product} />
+            <col className={COL.type} />
+            <col className={COL.channels} />
+            <col className={COL.unit} />
+            <col className={COL.warranty} />
+            <col className={COL.badge} />
+            <col className={COL.badge} />
+            <col className={COL.mrp} />
+          </colgroup>
+          <tbody>
+            {catalog.map((product) => (
+              <tr
+                key={product.id}
+                data-packing-row
+                data-product-id={product.id}
+                className="break-inside-avoid"
+              >
+                <td className="py-0.5 pr-1.5 pl-1 align-top text-[10px] font-medium text-neutral-400">
+                  01
+                </td>
+                <td className={`${COL.product} py-0.5 pr-1.5 align-top`}>
+                  <p className="font-semibold leading-tight break-words text-[#0A1F1B]">
+                    {product.name}
+                  </p>
+                  {product.description.trim() ? (
+                    <p className="mt-0.5 text-[9px] leading-snug font-normal break-words whitespace-normal text-neutral-500">
+                      {product.description.trim()}
+                    </p>
+                  ) : null}
+                </td>
+                <td className="py-0.5 pr-1.5 align-top">
+                  <div className="flex flex-wrap justify-center gap-px">
+                    {product.deviceTypes.map((type) => (
+                      <span
+                        key={type}
+                        className="inline-flex min-w-[1.65rem] justify-center rounded border border-[#18AD8D]/25 bg-[#18AD8D]/10 px-1 py-px text-[7px] font-semibold tracking-[0.06em] text-[#0A1F1B]"
+                      >
+                        {type}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="py-0.5 pr-1.5 text-center">
+                  <span className="tabular-nums font-semibold">
+                    {product.channels.trim() || "—"}
+                  </span>
+                </td>
+                <td className="py-0.5 pr-1.5 text-center">
+                  <span className="inline-flex rounded-full bg-neutral-100 px-1.5 py-px text-[9px] font-medium text-neutral-600">
+                    {product.unit}
+                  </span>
+                </td>
+                <td className="py-0.5 pr-1.5 text-center tabular-nums font-semibold">
+                  {product.warrantyYears}
+                </td>
+                <td className="py-0.5 pr-1 text-center">
+                  <FeatureMark
+                    active={product.isRechargeable}
+                    label="Rechargeable"
+                    Icon={BatteryCharging}
+                    tone="teal"
+                  />
+                </td>
+                <td className="py-0.5 pr-1 text-center">
+                  <FeatureMark
+                    active={product.hasBluetooth}
+                    label="Bluetooth"
+                    Icon={Bluetooth}
+                    tone="orange"
+                  />
+                </td>
+                <td className="py-0.5 pr-1.5 text-right text-[12px] font-semibold tabular-nums text-[#FF6503]">
+                  {formatInr(product.mrp)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+          </div>
+        </div>
       </div>
 
-      <div ref={contentRef} className="print-root space-y-8 print:space-y-0">
+      {/* react-to-print clones only this subtree, so the font variable has to
+          live inside it or the printed pages fall back to a wider system font
+          and rows overflow the fixed-height page. */}
+      <div
+        ref={contentRef}
+        className={`${fontVariableClass} print-root font-sans space-y-8 print:space-y-0`}
+      >
         <CoverPage brandNames={existingBrands} modelCount={catalog.length} />
         <HearingAidTypesPage />
+        <AudiogramPage />
+        <PriceGuidePage brands={existingBrands} products={catalog} />
         {pageSections.map((section) => {
           const {
             page,
@@ -1042,35 +1081,49 @@ export default function PriceList() {
                         <th className="print:hidden w-7 py-1 pr-0 pl-1.5 font-semibold">
                           <span className="sr-only">Reorder</span>
                         </th>
-                        <th className="w-7 py-1 pr-1.5 pl-1 font-semibold">#</th>
-                        <th className="w-[78mm] py-1 pr-1.5 font-semibold">Product</th>
-                        <th className="w-28 py-1 pr-1.5 text-center font-semibold">
+                        <th className={`${COL.num} py-1 pr-1.5 pl-1 font-semibold`}>
+                          #
+                        </th>
+                        <th className={`${COL.product} py-1 pr-1.5 font-semibold`}>
+                          Product
+                        </th>
+                        <th
+                          className={`${COL.type} py-1 pr-1.5 text-center font-semibold`}
+                        >
                           Type
                         </th>
-                        <th className="w-16 py-1 pr-1.5 text-center font-semibold">
-                          Channels/Band
-                        </th>
-                        <th className="w-12 py-1 pr-1.5 text-center font-semibold">
+                        <ChannelsColHead />
+                        <th
+                          className={`${COL.unit} overflow-hidden py-1 pr-1.5 text-center font-semibold tracking-[0.08em]`}
+                        >
                           Unit
                         </th>
-                        <th className="w-16 py-1 pr-1.5 text-center font-semibold">
+                        <th
+                          className={`${COL.warranty} py-1 pr-1.5 text-center font-semibold`}
+                        >
                           Warranty (yrs)
                         </th>
-                        <th className="w-9 py-1 pr-1 text-center font-semibold">
+                        <th
+                          className={`${COL.badge} py-1 pr-1 text-center font-semibold`}
+                        >
                           <BatteryCharging
                             className="mx-auto h-3 w-3 text-[#18AD8D]"
                             strokeWidth={2}
                           />
                           <span className="sr-only">Rechargeable</span>
                         </th>
-                        <th className="w-9 py-1 pr-1 text-center font-semibold">
+                        <th
+                          className={`${COL.badge} py-1 pr-1 text-center font-semibold`}
+                        >
                           <Bluetooth
                             className="mx-auto h-3 w-3 text-[#FF6503]"
                             strokeWidth={2}
                           />
                           <span className="sr-only">Bluetooth</span>
                         </th>
-                        <th className="py-1 pr-1.5 text-right font-semibold">
+                        <th
+                          className={`${COL.mrp} py-1 pr-1.5 text-right font-semibold`}
+                        >
                           MRP
                         </th>
                         <th className="print:hidden w-14 py-1 pr-1.5 text-right font-semibold">
@@ -1096,7 +1149,7 @@ export default function PriceList() {
                             );
                             setDraggingModel(null);
                           }}
-                          className={`break-inside-avoid ${
+                          className={`break-inside-avoid [page-break-inside:avoid] [break-after:auto] ${
                             rowIndex % 2 === 0 ? "bg-white" : "bg-[#F4FBF9]"
                           } ${
                             draggingModel?.brand === brand &&
@@ -1133,7 +1186,7 @@ export default function PriceList() {
                           <td className="py-0.5 pr-1.5 pl-1 align-top text-[10px] font-medium text-neutral-400">
                             {String(brandOffset + rowIndex + 1).padStart(2, "0")}
                           </td>
-                          <td className="w-[78mm] py-0.5 pr-1.5 align-top">
+                          <td className={`${COL.product} py-0.5 pr-1.5 align-top`}>
                             <p className="font-semibold leading-tight break-words text-[#0A1F1B]">
                               {product.name}
                             </p>
@@ -1166,7 +1219,7 @@ export default function PriceList() {
                                 updateChannels(product.id, event.target.value)
                               }
                               onClick={(event) => event.stopPropagation()}
-                              className="print:hidden mx-auto block w-[4.25rem] rounded border border-transparent bg-transparent px-1 py-0 text-center text-[11px] tabular-nums font-semibold text-[#0A1F1B] outline-none placeholder:font-medium placeholder:text-neutral-300 hover:border-neutral-200 hover:bg-white focus:border-[#18AD8D] focus:bg-white"
+                              className="print:hidden mx-auto block h-[14px] min-h-0 w-[4.25rem] rounded border border-transparent bg-transparent px-1 py-0 text-center text-[11px] leading-none tabular-nums font-semibold text-[#0A1F1B] outline-none placeholder:font-medium placeholder:text-neutral-300 hover:border-neutral-200 hover:bg-white focus:border-[#18AD8D] focus:bg-white"
                             />
                             <span className="hidden print:inline tabular-nums font-semibold text-[#0A1F1B]">
                               {product.channels.trim() || "—"}
@@ -1246,6 +1299,7 @@ export default function PriceList() {
             </section>
           );
         })}
+        <FittingJourneyPage brands={existingBrands} products={catalog} />
         <ClosingPage />
       </div>
     </div>
