@@ -434,7 +434,10 @@ export default function PriceList() {
       for (const row of rows) {
         const id = row.dataset.productId;
         if (!id) continue;
-        const height = Math.ceil(row.getBoundingClientRect().height) + 2;
+        // The probe row is a print-accurate replica (no on-screen reorder/edit
+        // controls), so its measured height matches the printed row almost
+        // exactly. Use it directly; PACKING_SAFETY_MM provides the clearance.
+        const height = Math.round(row.getBoundingClientRect().height);
         rowHeightsPx[id] = height;
         heightSum += height;
         heightCount += 1;
@@ -788,12 +791,12 @@ export default function PriceList() {
                       <td className="py-0.5 pr-1.5 pl-1 align-top text-[10px] font-medium text-neutral-400">
                         01
                       </td>
-                      <td className="py-0.5 pr-1.5 align-top">
+                      <td className="w-[78mm] py-0.5 pr-1.5 align-top">
                         <p className="font-semibold leading-tight break-words text-[#0A1F1B]">
                           {product.name}
                         </p>
                         {product.description.trim() ? (
-                          <p className="mt-0.5 text-[9px] leading-snug font-normal break-words text-neutral-500">
+                          <p className="mt-0.5 text-[9px] leading-snug font-normal break-words whitespace-normal text-neutral-500">
                             {product.description.trim()}
                           </p>
                         ) : null}
