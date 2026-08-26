@@ -434,7 +434,7 @@ export default function PriceList() {
       for (const row of rows) {
         const id = row.dataset.productId;
         if (!id) continue;
-        const height = Math.ceil(row.getBoundingClientRect().height) + 6;
+        const height = Math.ceil(row.getBoundingClientRect().height) + 2;
         rowHeightsPx[id] = height;
         heightSum += height;
         heightCount += 1;
