@@ -34,7 +34,6 @@ import {
   ClosingPage,
   CoverPage,
   FeatureMark,
-  FittingJourneyPage,
   HearingAidTypesPage,
   PriceGuidePage,
 } from "@/components/CatalogPages";
@@ -1299,7 +1298,6 @@ export default function PriceList({
             </section>
           );
         })}
-        <FittingJourneyPage brands={existingBrands} products={catalog} />
         <ClosingPage />
       </div>
     </div>

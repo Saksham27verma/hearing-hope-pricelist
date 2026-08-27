@@ -5,12 +5,7 @@ import {
   DEVICE_TYPE_LABELS,
   type HearingAid,
 } from "@/data/products";
-import {
-  summariseAccessoriesByBrand,
-  summariseAidsByBrand,
-  warrantyRange,
-  type Range,
-} from "@/lib/catalog-stats";
+import { summariseAidsByBrand } from "@/lib/catalog-stats";
 import { formatInr } from "@/lib/format";
 
 const pageClass =
@@ -804,12 +799,6 @@ function priceLabel(value: number | null) {
   return value == null ? "—" : formatInr(value);
 }
 
-function rangeLabel(range: Range | null) {
-  if (!range) return "—";
-  if (range.from === range.to) return formatInr(range.from);
-  return `${formatInr(range.from)} – ${formatInr(range.to)}`;
-}
-
 const tableHeadClass =
   "bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase";
 
@@ -990,187 +979,6 @@ export function PriceGuidePage({
           Prices are MRP for a single aid unless the row is marked Pair or Kit.
           Earmoulds, custom shells, receivers, chargers and consumables are
           priced separately. Clinic offers and schemes may apply.
-        </p>
-      </>
-    </GuidePage>
-  );
-}
-
-const FITTING_STEPS = [
-  "Hearing test and case history at any Hearing Hope clinic.",
-  "Counselling: style, power level and technology tier matched to your audiogram and lifestyle.",
-  "Demonstration or trial so you hear the difference before you commit.",
-  "Fitting with real-ear verification and first-fit programming.",
-  "Follow-up fine-tuning in the first weeks as you adapt.",
-  "Annual check, cleaning and re-programming as hearing changes.",
-];
-
-const CARE_TIPS = [
-  "Use a dry box, or a drying charger, every night.",
-  "Clean domes and wax filters weekly.",
-  "Keep the aids away from hairspray and steam.",
-  "Take them out to shower or swim unless the model is rated IP68.",
-];
-
-const COMMON_QUESTIONS = [
-  {
-    question: "Should I get one aid or two?",
-    answer:
-      "Both ears, if both have a loss — two aids restore spatial hearing and make speech far easier to pick out of noise.",
-  },
-  {
-    question: "How long will they last?",
-    answer: "Typically 4–6 years of daily use before replacement.",
-  },
-  {
-    question: "How long until they feel normal?",
-    answer:
-      "A few weeks. The brain adapts gradually, so wear them daily rather than only in difficult situations.",
-  },
-  {
-    question: "Can I try before buying?",
-    answer: "Yes — ask about a demonstration at your clinic.",
-  },
-];
-
-export function FittingJourneyPage({
-  brands,
-  products,
-}: {
-  brands: string[];
-  products: HearingAid[];
-}) {
-  const accessories = summariseAccessoriesByBrand(brands, products);
-  const warranty = warrantyRange(products);
-  const warrantyLabel = !warranty
-    ? "The manufacturer warranty"
-    : warranty.from === warranty.to
-      ? `The manufacturer warranty runs ${warranty.from} ${warranty.from === 1 ? "year" : "years"}`
-      : `The manufacturer warranty runs ${warranty.from} to ${warranty.to} years`;
-
-  return (
-    <GuidePage
-      title="Your fitting journey and aftercare"
-      standfirst="The price is one part of the decision. This page covers everything that happens around it — how a fitting works, what the warranty holds, and what it costs to keep an aid running."
-    >
-      <>
-        <div className="mt-4 rounded-2xl bg-[#F4FBF9] px-4 py-3">
-          <SectionLabel>Six steps</SectionLabel>
-          <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1.5">
-            {FITTING_STEPS.map((step, index) => (
-              <p
-                key={step}
-                className="flex gap-2 text-[9.5px] leading-snug text-neutral-600"
-              >
-                <StepNumber>{index + 1}</StepNumber>
-                {step}
-              </p>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <SectionLabel>What the warranty holds</SectionLabel>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <div className="break-inside-avoid rounded-xl border border-[#18AD8D]/30 bg-[#18AD8D]/8 px-3 py-2">
-              <p className="text-[10.5px] leading-tight font-semibold text-[#0A1F1B]">
-                Covered by warranty
-              </p>
-              <p className="mt-1 text-[9px] leading-snug text-neutral-600">
-                {warrantyLabel} depending on the model, as printed in the
-                Warranty column beside each aid. It covers manufacturing defects
-                and failure of the electronics, repaired or replaced by the
-                manufacturer.
-              </p>
-            </div>
-            <div className="break-inside-avoid rounded-xl border border-[#FF6503]/30 bg-[#FF6503]/8 px-3 py-2">
-              <p className="text-[10.5px] leading-tight font-semibold text-[#0A1F1B]">
-                Not covered
-              </p>
-              <p className="mt-1 text-[9px] leading-snug text-neutral-600">
-                Loss, physical damage, moisture damage, and consumables — domes,
-                wax filters, tubes and earmoulds. Chargers, receivers and CROS
-                transmitters carry their own shorter warranty, usually one year.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <SectionLabel>Consumables and accessories</SectionLabel>
-          <div className="mt-2 overflow-hidden rounded-lg border border-neutral-200">
-            <table className="w-full table-fixed border-collapse text-[10px]">
-              <thead>
-                <tr className={tableHeadClass}>
-                  <th className="w-[26%] py-1 pr-2 pl-2 font-semibold">Brand</th>
-                  <th className="py-1 pr-2 text-right font-semibold">
-                    Receivers
-                  </th>
-                  <th className="py-1 pr-3 text-right font-semibold">
-                    Chargers
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {accessories.map((row, index) => (
-                  <tr key={row.brand} className={rowClass(index)}>
-                    <td className="py-1 pr-2 pl-2 font-semibold text-[#0A1F1B]">
-                      {row.brand}
-                    </td>
-                    <td className="py-1 pr-2 text-right font-semibold tabular-nums text-[#0A1F1B]">
-                      {rangeLabel(row.receivers)}
-                    </td>
-                    <td className="py-1 pr-3 text-right font-semibold tabular-nums text-[#0A1F1B]">
-                      {rangeLabel(row.chargers)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="mt-1.5 text-[9px] leading-snug text-neutral-500">
-            Domes, wax filters and tubes are low-cost items, replaced as a matter
-            of course at routine visits. A dash means the brand supplies no
-            separately priced part in that category.
-          </p>
-        </div>
-
-        <div className="mt-4">
-          <SectionLabel>Care</SectionLabel>
-          <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1">
-            {CARE_TIPS.map((tip) => (
-              <p
-                key={tip}
-                className="flex gap-2 text-[9.5px] leading-snug text-neutral-600"
-              >
-                <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-[#FF6503]" />
-                {tip}
-              </p>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <SectionLabel>Common questions</SectionLabel>
-          <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1.5">
-            {COMMON_QUESTIONS.map((item) => (
-              <p
-                key={item.question}
-                className="text-[9.5px] leading-snug text-neutral-600"
-              >
-                <span className="font-semibold text-[#0A1F1B]">
-                  {item.question}
-                </span>{" "}
-                {item.answer}
-              </p>
-            ))}
-          </div>
-        </div>
-
-        <p className="mt-3 text-[9.5px] leading-snug text-neutral-600">
-          <span className="font-semibold text-[#0A1F1B]">Where to go:</span> all
-          six Hearing Hope clinics are listed on the following page. Walk in for
-          a test, a demonstration, or a service visit.
         </p>
       </>
     </GuidePage>

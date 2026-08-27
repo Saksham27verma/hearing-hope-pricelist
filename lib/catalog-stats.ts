@@ -1,4 +1,4 @@
-import type { DeviceType, HearingAid } from "@/data/products";
+import type { HearingAid } from "@/data/products";
 
 export type Range = { from: number; to: number };
 
@@ -47,13 +47,6 @@ function byBrand(products: HearingAid[]) {
   return grouped;
 }
 
-/** Manufacturer cover actually present on the aids in the deck, in years. */
-export function warrantyRange(products: HearingAid[]) {
-  return rangeOf(
-    products.filter(isHearingAid).map((product) => product.warrantyYears),
-  );
-}
-
 export type BrandAidSummary = {
   brand: string;
   models: number;
@@ -77,30 +70,6 @@ export function summariseAidsByBrand(
       singleFrom: (priceRange(singles) ?? priceRange(aids))?.from ?? null,
       premiumUpTo: priceRange(aids)?.to ?? null,
       channels: channelRange(aids),
-    };
-  });
-}
-
-export type BrandAccessorySummary = {
-  brand: string;
-  receivers: Range | null;
-  chargers: Range | null;
-};
-
-export function summariseAccessoriesByBrand(
-  brands: string[],
-  products: HearingAid[],
-): BrandAccessorySummary[] {
-  const grouped = byBrand(products);
-  const ofType = (items: HearingAid[], type: DeviceType) =>
-    priceRange(items.filter((item) => item.deviceTypes.includes(type)));
-
-  return brands.map((brand) => {
-    const items = grouped.get(brand) ?? [];
-    return {
-      brand,
-      receivers: ofType(items, "REC"),
-      chargers: ofType(items, "CHG"),
     };
   });
 }
