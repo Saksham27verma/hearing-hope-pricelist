@@ -34,8 +34,10 @@ import {
   ClosingPage,
   CoverPage,
   FeatureMark,
+  FittingJourneyPage,
   HearingAidTypesPage,
   PriceGuidePage,
+  ServicesPage,
 } from "@/components/CatalogPages";
 import CsvImport from "@/components/CsvImport";
 import PageEditor from "@/components/PageEditor";
@@ -909,6 +911,7 @@ export default function PriceList({
         className={`${fontVariableClass} print-root font-sans space-y-8 print:space-y-0`}
       >
         <CoverPage brandNames={existingBrands} modelCount={catalog.length} />
+        <ServicesPage />
         <HearingAidTypesPage />
         <AudiogramPage />
         <PriceGuidePage brands={existingBrands} products={catalog} />
@@ -1298,6 +1301,7 @@ export default function PriceList({
             </section>
           );
         })}
+        <FittingJourneyPage brands={existingBrands} products={catalog} />
         <ClosingPage />
       </div>
     </div>

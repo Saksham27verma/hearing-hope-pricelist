@@ -1,11 +1,31 @@
 import type { ComponentType, ReactNode } from "react";
-import { BatteryCharging, Bluetooth, Globe, MapPin, Phone } from "lucide-react";
+import {
+  Activity,
+  AudioLines,
+  Baby,
+  BatteryCharging,
+  Bluetooth,
+  Brain,
+  Cpu,
+  Ear,
+  Globe,
+  House,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Stethoscope,
+} from "lucide-react";
 import {
   BRAND_LOGOS,
   DEVICE_TYPE_LABELS,
   type HearingAid,
 } from "@/data/products";
-import { summariseAidsByBrand } from "@/lib/catalog-stats";
+import {
+  summariseAccessoriesByBrand,
+  summariseAidsByBrand,
+  warrantyRange,
+  type Range,
+} from "@/lib/catalog-stats";
 import { formatInr } from "@/lib/format";
 
 const pageClass =
@@ -236,6 +256,163 @@ export function CoverPage({
         )}
 
         <div className="mt-10 w-full border-t border-neutral-200 pt-5 text-[11px] text-neutral-500">
+          <p className="font-medium text-[#0A1F1B]">hearinghope.in</p>
+          <p className="mt-1">
+            Rohini · Green Park · Indirapuram · Sanjay Nagar · Gurgaon · Noida
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const CLINICAL_SERVICES = [
+  {
+    code: "PTA",
+    name: "Pure Tone Audiometry",
+    detail:
+      "The quietest sounds you can hear at each pitch — the standard hearing test for adults and older children.",
+    Icon: AudioLines,
+    tone: "teal" as const,
+  },
+  {
+    code: "BERA",
+    name: "Brainstem evoked response",
+    detail:
+      "How the hearing nerve and brain respond to sound. Objective, so it works for infants and anyone who cannot press a button.",
+    Icon: Brain,
+    tone: "orange" as const,
+  },
+  {
+    code: "ASSR",
+    name: "Auditory steady-state response",
+    detail:
+      "A frequency-by-frequency hearing map when a standard audiogram is not possible — often paired with BERA.",
+    Icon: Activity,
+    tone: "teal" as const,
+  },
+  {
+    code: "OAE",
+    name: "Otoacoustic emissions",
+    detail:
+      "A gentle inner-ear screen of the cochlear hair cells. The first test for newborns and young children.",
+    Icon: Baby,
+    tone: "orange" as const,
+  },
+  {
+    code: "Impedance",
+    name: "Middle-ear assessment",
+    detail:
+      "Eardrum movement and middle-ear pressure, to find fluid, blockage, or a perforation before fitting an aid.",
+    Icon: Stethoscope,
+    tone: "teal" as const,
+  },
+  {
+    code: "Hearing aids",
+    name: "Trial, fitting and programming",
+    detail:
+      "Demonstration, real-ear verification and fine-tuning of digital hearing aids from the brands in this list.",
+    Icon: Ear,
+    tone: "orange" as const,
+  },
+  {
+    code: "Cochlear implant",
+    name: "Candidacy and mapping",
+    detail:
+      "Assessment when aids are no longer enough, plus processor mapping and rehabilitation after implantation.",
+    Icon: Cpu,
+    tone: "teal" as const,
+  },
+  {
+    code: "Speech therapy",
+    name: "Listen and speak",
+    detail:
+      "Paediatric and adult sessions for speech delay, clarity, language, and communication after hearing loss.",
+    Icon: MessageCircle,
+    tone: "orange" as const,
+  },
+];
+
+export function ServicesPage() {
+  return (
+    <section
+      className={`${pageClass} print:h-[297mm] print:max-h-[297mm] print:break-before-page`}
+    >
+      <AccentBar />
+      <div className="flex min-h-0 flex-1 flex-col items-center px-10 pt-8 pb-7 text-center">
+        <p className="text-[10px] font-semibold tracking-[0.32em] text-[#18AD8D] uppercase">
+          Centre for Speech & Hearing
+        </p>
+
+        <img
+          src="/brand/logo.png"
+          alt="Hearing Hope"
+          className="mt-5 h-28 w-auto object-contain"
+        />
+
+        <div className="mt-4">
+          <Wave />
+        </div>
+
+        <h2 className="mt-5 text-[26px] leading-none font-semibold tracking-tight text-[#0A1F1B]">
+          Clinical services
+        </h2>
+        <p className="mt-2 max-w-lg text-[12px] leading-relaxed text-neutral-500">
+          Diagnostics, devices and therapy under one roof — from the first
+          hearing test to lifelong aftercare, at every Hearing Hope clinic.
+        </p>
+
+        <div className="mt-6 grid w-full min-h-0 flex-1 grid-cols-2 content-start gap-2.5 text-left">
+          {CLINICAL_SERVICES.map((service) => {
+            const iconWrap =
+              service.tone === "teal"
+                ? "bg-[#18AD8D]/12 text-[#18AD8D]"
+                : "bg-[#FF6503]/12 text-[#FF6503]";
+            return (
+              <article
+                key={service.code}
+                className="flex break-inside-avoid gap-3 rounded-2xl border border-neutral-200 bg-[#F4FBF9] px-3.5 py-3"
+              >
+                <span
+                  className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconWrap}`}
+                >
+                  <service.Icon className="h-4 w-4" strokeWidth={2} />
+                </span>
+                <div className="min-w-0">
+                  <p
+                    className={`text-[9px] font-semibold tracking-[0.16em] uppercase ${
+                      service.tone === "teal"
+                        ? "text-[#18AD8D]"
+                        : "text-[#FF6503]"
+                    }`}
+                  >
+                    {service.code}
+                  </p>
+                  <h3 className="mt-0.5 text-[13px] leading-tight font-semibold text-[#0A1F1B]">
+                    {service.name}
+                  </h3>
+                  <p className="mt-1 text-[10px] leading-snug text-neutral-500">
+                    {service.detail}
+                  </p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-2xl border border-[#18AD8D]/25 bg-[#18AD8D]/8 px-4 py-2.5 text-left">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#18AD8D] ring-1 ring-[#18AD8D]/20">
+            <House className="h-4 w-4" strokeWidth={2} />
+          </span>
+          <p className="text-[11px] leading-snug text-neutral-600">
+            <span className="font-semibold text-[#0A1F1B]">Home visits</span>
+            {" · "}
+            Audiologist care at your door, plus aided audiometry, free-field
+            testing and annual aftercare at the clinic.
+          </p>
+        </div>
+
+        <div className="mt-auto w-full border-t border-neutral-200 pt-4 text-[11px] text-neutral-500">
           <p className="font-medium text-[#0A1F1B]">hearinghope.in</p>
           <p className="mt-1">
             Rohini · Green Park · Indirapuram · Sanjay Nagar · Gurgaon · Noida
@@ -799,6 +976,12 @@ function priceLabel(value: number | null) {
   return value == null ? "—" : formatInr(value);
 }
 
+function rangeLabel(range: Range | null) {
+  if (!range) return "—";
+  if (range.from === range.to) return formatInr(range.from);
+  return `${formatInr(range.from)} – ${formatInr(range.to)}`;
+}
+
 const tableHeadClass =
   "bg-[#0A1F1B] text-left text-[8px] font-semibold tracking-[0.12em] text-white uppercase";
 
@@ -979,6 +1162,187 @@ export function PriceGuidePage({
           Prices are MRP for a single aid unless the row is marked Pair or Kit.
           Earmoulds, custom shells, receivers, chargers and consumables are
           priced separately. Clinic offers and schemes may apply.
+        </p>
+      </>
+    </GuidePage>
+  );
+}
+
+const FITTING_STEPS = [
+  "Hearing test and case history at any Hearing Hope clinic.",
+  "Counselling: style, power level and technology tier matched to your audiogram and lifestyle.",
+  "Demonstration or trial so you hear the difference before you commit.",
+  "Fitting with real-ear verification and first-fit programming.",
+  "Follow-up fine-tuning in the first weeks as you adapt.",
+  "Annual check, cleaning and re-programming as hearing changes.",
+];
+
+const CARE_TIPS = [
+  "Use a dry box, or a drying charger, every night.",
+  "Clean domes and wax filters weekly.",
+  "Keep the aids away from hairspray and steam.",
+  "Take them out to shower or swim unless the model is rated IP68.",
+];
+
+const COMMON_QUESTIONS = [
+  {
+    question: "Should I get one aid or two?",
+    answer:
+      "Both ears, if both have a loss — two aids restore spatial hearing and make speech far easier to pick out of noise.",
+  },
+  {
+    question: "How long will they last?",
+    answer: "Typically 4–6 years of daily use before replacement.",
+  },
+  {
+    question: "How long until they feel normal?",
+    answer:
+      "A few weeks. The brain adapts gradually, so wear them daily rather than only in difficult situations.",
+  },
+  {
+    question: "Can I try before buying?",
+    answer: "Yes — ask about a demonstration at your clinic.",
+  },
+];
+
+export function FittingJourneyPage({
+  brands,
+  products,
+}: {
+  brands: string[];
+  products: HearingAid[];
+}) {
+  const accessories = summariseAccessoriesByBrand(brands, products);
+  const warranty = warrantyRange(products);
+  const warrantyLabel = !warranty
+    ? "The manufacturer warranty"
+    : warranty.from === warranty.to
+      ? `The manufacturer warranty runs ${warranty.from} ${warranty.from === 1 ? "year" : "years"}`
+      : `The manufacturer warranty runs ${warranty.from} to ${warranty.to} years`;
+
+  return (
+    <GuidePage
+      title="Your fitting journey and aftercare"
+      standfirst="The price is one part of the decision. This page covers everything that happens around it — how a fitting works, what the warranty holds, and what it costs to keep an aid running."
+    >
+      <>
+        <div className="mt-4 rounded-2xl bg-[#F4FBF9] px-4 py-3">
+          <SectionLabel>Six steps</SectionLabel>
+          <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1.5">
+            {FITTING_STEPS.map((step, index) => (
+              <p
+                key={step}
+                className="flex gap-2 text-[9.5px] leading-snug text-neutral-600"
+              >
+                <StepNumber>{index + 1}</StepNumber>
+                {step}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <SectionLabel>What the warranty holds</SectionLabel>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="break-inside-avoid rounded-xl border border-[#18AD8D]/30 bg-[#18AD8D]/8 px-3 py-2">
+              <p className="text-[10.5px] leading-tight font-semibold text-[#0A1F1B]">
+                Covered by warranty
+              </p>
+              <p className="mt-1 text-[9px] leading-snug text-neutral-600">
+                {warrantyLabel} depending on the model, as printed in the
+                Warranty column beside each aid. It covers manufacturing defects
+                and failure of the electronics, repaired or replaced by the
+                manufacturer.
+              </p>
+            </div>
+            <div className="break-inside-avoid rounded-xl border border-[#FF6503]/30 bg-[#FF6503]/8 px-3 py-2">
+              <p className="text-[10.5px] leading-tight font-semibold text-[#0A1F1B]">
+                Not covered
+              </p>
+              <p className="mt-1 text-[9px] leading-snug text-neutral-600">
+                Loss, physical damage, moisture damage, and consumables — domes,
+                wax filters, tubes and earmoulds. Chargers, receivers and CROS
+                transmitters carry their own shorter warranty, usually one year.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <SectionLabel>Consumables and accessories</SectionLabel>
+          <div className="mt-2 overflow-hidden rounded-lg border border-neutral-200">
+            <table className="w-full table-fixed border-collapse text-[10px]">
+              <thead>
+                <tr className={tableHeadClass}>
+                  <th className="w-[26%] py-1 pr-2 pl-2 font-semibold">Brand</th>
+                  <th className="py-1 pr-2 text-right font-semibold">
+                    Receivers
+                  </th>
+                  <th className="py-1 pr-3 text-right font-semibold">
+                    Chargers
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {accessories.map((row, index) => (
+                  <tr key={row.brand} className={rowClass(index)}>
+                    <td className="py-1 pr-2 pl-2 font-semibold text-[#0A1F1B]">
+                      {row.brand}
+                    </td>
+                    <td className="py-1 pr-2 text-right font-semibold tabular-nums text-[#0A1F1B]">
+                      {rangeLabel(row.receivers)}
+                    </td>
+                    <td className="py-1 pr-3 text-right font-semibold tabular-nums text-[#0A1F1B]">
+                      {rangeLabel(row.chargers)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-1.5 text-[9px] leading-snug text-neutral-500">
+            Domes, wax filters and tubes are low-cost items, replaced as a matter
+            of course at routine visits. A dash means the brand supplies no
+            separately priced part in that category.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <SectionLabel>Care</SectionLabel>
+          <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1">
+            {CARE_TIPS.map((tip) => (
+              <p
+                key={tip}
+                className="flex gap-2 text-[9.5px] leading-snug text-neutral-600"
+              >
+                <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-[#FF6503]" />
+                {tip}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <SectionLabel>Common questions</SectionLabel>
+          <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1.5">
+            {COMMON_QUESTIONS.map((item) => (
+              <p
+                key={item.question}
+                className="text-[9.5px] leading-snug text-neutral-600"
+              >
+                <span className="font-semibold text-[#0A1F1B]">
+                  {item.question}
+                </span>{" "}
+                {item.answer}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <p className="mt-3 text-[9.5px] leading-snug text-neutral-600">
+          <span className="font-semibold text-[#0A1F1B]">Where to go:</span> all
+          six Hearing Hope clinics are listed on the following page. Walk in for
+          a test, a demonstration, or a service visit.
         </p>
       </>
     </GuidePage>
