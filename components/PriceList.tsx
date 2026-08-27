@@ -56,13 +56,13 @@ const LEGACY_STORAGE_KEY = "hearing-hope-catalog-v2";
 /** Print-accurate column widths. Shared by the packing probe and the live table. */
 const COL = {
   num: "w-7",
-  product: "w-[78mm]",
+  product: "min-w-0 w-full",
   type: "w-28",
   channels: "w-[22mm]",
   unit: "w-12",
   warranty: "w-[15mm]",
   badge: "w-9",
-  mrp: "w-[16mm]",
+  mrp: "w-[22mm] min-w-[22mm]",
 };
 
 function ChannelsColHead() {
@@ -787,7 +787,7 @@ export default function PriceList({
                       B
                     </th>
                     <th
-                      className={`${COL.mrp} py-1 pr-1.5 text-right font-semibold`}
+                      className={`${COL.mrp} py-1 pr-2 text-right font-semibold`}
                     >
                       MRP
                     </th>
@@ -890,7 +890,7 @@ export default function PriceList({
                     tone="orange"
                   />
                 </td>
-                <td className="py-0.5 pr-1.5 text-right text-[12px] font-semibold tabular-nums text-[#FF6503]">
+                <td className={`${COL.mrp} py-0.5 pr-2 text-right text-[12px] font-semibold tabular-nums whitespace-nowrap text-[#FF6503]`}>
                   {formatInr(product.mrp)}
                 </td>
               </tr>
@@ -1121,7 +1121,7 @@ export default function PriceList({
                           <span className="sr-only">Bluetooth</span>
                         </th>
                         <th
-                          className={`${COL.mrp} py-1 pr-1.5 text-right font-semibold`}
+                          className={`${COL.mrp} py-1 pr-2 text-right font-semibold`}
                         >
                           MRP
                         </th>
@@ -1248,7 +1248,7 @@ export default function PriceList({
                               tone="orange"
                             />
                           </td>
-                          <td className="py-0.5 pr-1.5 text-right text-[12px] font-semibold tabular-nums text-[#FF6503]">
+                          <td className={`${COL.mrp} py-0.5 pr-2 text-right text-[12px] font-semibold tabular-nums whitespace-nowrap text-[#FF6503]`}>
                             {formatInr(product.mrp)}
                           </td>
                           <td className="print:hidden py-0.5 pr-1.5">
